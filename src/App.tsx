@@ -199,8 +199,8 @@ export function App() {
           <p className="eyebrow">Flight deck</p>
           <h1 id="mission-title">Astra-7 is threading a relay shadow with a tight hand on the throttle.</h1>
           <p className="intro">
-            Watch the live pass, compare the filtered reports, and keep the debrief pack clean
-            before the next burn opens.
+            Watch the live pass, inspect the anomaly stack, and pin down what happened before the
+            next burn opens.
           </p>
           <div className="context-row">
             <span className="route-chip">Route /mission</span>
@@ -211,7 +211,7 @@ export function App() {
             </span>
           </div>
           <p className="mission-note">
-            The current window needs a filtered export for the review room.
+            The selected signal drop still needs inline replay on the mission surface.
           </p>
         </div>
 
@@ -279,18 +279,20 @@ export function App() {
           <small>{selectedEvent?.severity ? formatSeverity(selectedEvent.severity) : 'Waiting for selection'}</small>
         </article>
         <article className="mission-stat mission-stat--export">
-          <span>Handoff pack</span>
-          <strong>Filtered export</strong>
-          <small>{selectedEvent?.nextStep ?? 'Pick a report to inspect the next maneuver.'}</small>
+          <span>Replay gap</span>
+          <strong>Inline replay missing</strong>
+          <small>
+            {selectedEvent?.nextStep ?? 'Pick a report to inspect the replay gap before the next maneuver.'}
+          </small>
         </article>
       </section>
 
       <section className="request-strip" aria-labelledby="request-title">
         <div>
           <p className="eyebrow">Contribution opportunity</p>
-          <h2 id="request-title">Filtered reports need a clean export.</h2>
+          <h2 id="request-title">Signal drops need inline replay.</h2>
           <p className="intro">
-            The team can see the spike, but it still needs a tidy handoff for the review room.
+            The team can see the spike, but not the telemetry lead-in that explains it.
           </p>
         </div>
         <button
@@ -299,7 +301,7 @@ export function App() {
           onClick={openCrowdshipRequest}
           disabled={crowdshipStatus !== 'ready'}
         >
-          Request export
+          Request replay mode
         </button>
       </section>
 
