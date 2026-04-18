@@ -35,6 +35,32 @@ Do not show fake implementation progress, fake pull requests, fake preview links
 - Keyboard access is mandatory for product controls and widget launch.
 - Admin-facing instructions must be plain enough that another app owner could repeat the integration.
 
+## Mobile-First And PWA
+
+The reference app should prove that Crowdship works inside a real mobile product, not only in a desktop dashboard.
+
+Mobile-first requirements:
+
+- Design the reports workflow at 390x844 before expanding to desktop.
+- Keep filters, report rows, export-related controls, and the Crowdship widget reachable with one hand.
+- Use stacked cards or compact rows on mobile instead of desktop-only tables.
+- Keep the widget launcher visible without covering the app's primary actions.
+- Use at least 44px touch targets for filters, table actions, widget launch, and preview links.
+- Avoid hover-only controls.
+- Keep long report names, empty states, and filter summaries readable without horizontal scrolling.
+- Preserve safe page context when the user opens the widget, switches tabs, opens a preview, or returns to the app.
+
+PWA direction:
+
+- The example app should be installable as a PWA with a manifest, icons, `display: standalone`, service worker, and app-safe routing.
+- Home Screen install should make the app feel close to a native iPhone app without requiring an app store.
+- Web Push should be reserved for meaningful product events, such as preview ready, request needs review, feature shipped, or admin action needed.
+- On iOS/iPadOS, push requires the web app to be added to the Home Screen and permission must be requested from direct user interaction.
+- Badge counts should reflect unresolved user/admin actions.
+- Notification settings must avoid noisy product spam.
+
+Do not make the example app dependent on desktop-only review workflows.
+
 ## Visual Principles
 
 - Build the usable app first, not a marketing homepage.
@@ -56,6 +82,15 @@ Before user-facing UI is considered done, run:
 - Error state
 - Secret scan of rendered HTML and console output
 
+Mobile/PWA checks:
+
+- Mobile app flow at 390x844.
+- Widget launch does not cover primary app actions.
+- Filters and report rows are usable by touch.
+- App returns correctly after opening a preview.
+- Installable manifest and service worker once the PWA shell exists.
+- Notification permission prompt triggered only by a user action.
+
 ## CI And Local Enforcement
 
 The repository enforces baseline quality with:
@@ -67,3 +102,9 @@ The repository enforces baseline quality with:
 - GitHub Actions quality workflow
 
 Playwright visual checks will become mandatory as soon as the first real UI implementation lands.
+
+## Platform References
+
+- WebKit: [Web Push for Web Apps on iOS and iPadOS](https://webkit.org/blog/13878/web-push-for-web-apps-on-ios-and-ipados/).
+- Apple Developer: [Sending web push notifications in web apps and browsers](https://developer.apple.com/documentation/usernotifications/sending-web-push-notifications-in-web-apps-and-browsers).
+- MDN: [Installing Progressive Web Apps](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Installing).

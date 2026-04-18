@@ -31,6 +31,9 @@ test('example app ui contract protects the integration boundary', () => {
   const contract = read('docs/ui-quality-contract.md');
 
   assert.match(contract, /External Product Rule/);
+  assert.match(contract, /Mobile-First And PWA/);
+  assert.match(contract, /Home Screen/);
+  assert.match(contract, /Web Push/);
   assert.match(contract, /Crowdship owns contribution UI/);
   assert.match(contract, /1440x900/);
   assert.match(contract, /390x844/);
@@ -41,10 +44,13 @@ test('agent skill requires safe context and real previews', () => {
   const skill = read('.agents/skills/example-widget-integration/SKILL.md');
   const safeContext = read('.agents/skills/example-widget-integration/references/safe-context.md');
   const preview = read('.agents/skills/example-widget-integration/references/preview-cicd.md');
+  const externalUx = read('.agents/skills/example-widget-integration/references/external-app-ux.md');
 
   assert.match(skill, /Pass only safe context/);
   assert.match(safeContext, /Do Not Pass/);
   assert.match(preview, /Do not show a preview URL/);
+  assert.match(externalUx, /Mobile-First Product/);
+  assert.match(externalUx, /PWA Direction/);
 });
 
 test('package scripts expose local quality commands', () => {
