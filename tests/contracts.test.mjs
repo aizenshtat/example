@@ -55,3 +55,16 @@ test('package scripts expose local quality commands', () => {
   assert.equal(pkg.scripts.test, 'node --test tests/*.test.mjs');
   assert.equal(pkg.scripts.lint, 'bash -n scripts/*.sh .githooks/pre-commit');
 });
+
+test('sentry is documented as core team merge evidence', () => {
+  const sentry = read('docs/sentry.md');
+  const preview = read('docs/preview-cicd.md');
+  const admin = read('docs/admin-setup.md');
+
+  assert.match(sentry, /Merge-Readiness Evidence/);
+  assert.match(sentry, /contribution_id/);
+  assert.match(sentry, /source map/iu);
+  assert.match(preview, /No new unhandled Sentry issues/);
+  assert.match(preview, /merge-readiness signal/);
+  assert.match(admin, /Merge-Readiness Evidence/);
+});

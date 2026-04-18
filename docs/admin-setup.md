@@ -42,8 +42,23 @@ Admins choose:
 - Review flagged feature candidates.
 - Validate code and product fit before merge.
 - Request fixes when needed.
-- Merge PRs only after CI and preview checks pass.
+- Merge PRs only after CI, preview checks, and Sentry evidence are acceptable.
 - Keep repository and deployment secrets out of public docs.
+
+## Merge-Readiness Evidence
+
+For each Crowdship PR, admins should review:
+
+- Approved spec and requester approval.
+- Vote and comment summary.
+- Branch, PR, CI run, and preview URL.
+- Test and build status.
+- Sentry release for the preview commit.
+- New unhandled Sentry issues for the contribution.
+- Known unrelated Sentry issues.
+- Last operational check timestamp.
+
+Sentry helps answer whether the preview introduced obvious runtime regressions. It does not replace code review, product review, or maintainer judgment.
 
 ## Contributor Boundary
 

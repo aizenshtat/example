@@ -7,11 +7,11 @@ description: Use when designing or implementing the example app as Crowdship's e
 
 ## Purpose
 
-The example app demonstrates how a normal external product installs Crowdship. It should not feel like a toy landing page.
+The example app is the first reference external product that installs Crowdship. It should not feel like a toy landing page.
 
 ## Mandatory Reads
 
-- `references/external-app-ux.md` for the demo product experience.
+- `references/external-app-ux.md` for the reference product experience.
 - `references/safe-context.md` for widget context rules.
 - `references/preview-cicd.md` before touching branch/preview deployment behavior.
 

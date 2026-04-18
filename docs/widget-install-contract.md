@@ -13,7 +13,7 @@ The widget owns all contribution UI. The example app should not implement reques
   async
   src="https://crowdship.aizenshtat.eu/widget/v1.js"
   data-crowdship-project="example"
-  data-crowdship-environment="demo"
+  data-crowdship-environment="production"
 ></script>
 ```
 
@@ -22,8 +22,8 @@ The script is public. The project slug is public. Any write protection happens o
 ## Optional Identity
 
 ```html
-data-crowdship-user-id="demo-user-123"
-data-crowdship-user-email="demo@example.com"
+data-crowdship-user-id="customer-123"
+data-crowdship-user-email="customer@example.com"
 data-crowdship-user-role="customer"
 ```
 
@@ -36,7 +36,7 @@ window.Crowdship.setContext({
   route: window.location.pathname,
   appVersion: "2026.04.18",
   selectedObjectType: "report",
-  selectedObjectId: "report-demo-7",
+  selectedObjectId: "report-7",
   activeFilters: {
     segment: "enterprise",
     period: "last-30-days"

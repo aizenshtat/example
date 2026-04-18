@@ -6,7 +6,7 @@ Configured through `gh secret set`:
 
 | Name | Purpose |
 | --- | --- |
-| `OPENAI_API_KEY` | OpenAI API access if the example app needs demo AI calls. |
+| `OPENAI_API_KEY` | OpenAI API access if the example app needs integration AI calls. |
 | `SENTRY_AUTH_TOKEN` | Sentry CLI authentication for releases and source maps. |
 | `SENTRY_DSN` | Project DSN for runtime error reporting. |
 

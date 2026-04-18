@@ -4,11 +4,11 @@
 
 This repository represents a product owned by someone outside Crowdship. It exists to prove that the Crowdship widget can be embedded into a normal customer-facing app without exposing the app codebase to its users.
 
-The example app is not the product being judged. It is the integration target that makes the Crowdship story concrete.
+The example app is the first reference integration target. It should be useful for presentation walkthroughs and durable enough to keep evolving as Crowdship grows.
 
 All integration behavior should be real. The example repo should receive real Crowdship-generated branches, real pull requests, real CI checks, real preview deployments, and real production deploys.
 
-## Demo Product
+## Reference Product
 
 The app should feel like a small SaaS product with real users and a few obvious missing workflows.
 
@@ -28,9 +28,9 @@ The canonical first feature is "Export filtered reports as CSV." This is narrow 
   async
   src="https://crowdship.aizenshtat.eu/widget/v1.js"
   data-crowdship-project="example"
-  data-crowdship-environment="demo"
-  data-crowdship-user-id="demo-user-123"
-  data-crowdship-user-email="demo@example.com"
+  data-crowdship-environment="production"
+  data-crowdship-user-id="customer-123"
+  data-crowdship-user-email="customer@example.com"
   data-crowdship-user-role="customer"
 ></script>
 ```
@@ -44,7 +44,7 @@ window.Crowdship.setContext({
   route: "/reports",
   appVersion: "2026.04.18",
   selectedObjectType: "report",
-  selectedObjectId: "report-demo-7",
+  selectedObjectId: "report-7",
   activeFilters: {
     segment: "enterprise",
     period: "last-30-days"
@@ -60,9 +60,9 @@ The example app must not pass:
 - Internal API responses.
 - Private customer records.
 
-## Demo Request
+## Seed Request
 
-The canonical demo request is:
+The canonical first request is:
 
 ```text
 Export filtered reports as CSV.
@@ -78,4 +78,5 @@ For each accepted contribution, the example app must be able to show:
 - Pull request in `aizenshtat/example`.
 - GitHub Actions status.
 - Preview deployment under `/previews/<contribution-id>/`.
+- Sentry release and filtered issue status for the preview.
 - Production deployment after merge.

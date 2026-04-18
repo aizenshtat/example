@@ -1,6 +1,6 @@
 # Example
 
-Infrastructure placeholder for example apps that can be used to validate Crowdship flows without using a private product codebase.
+Bootstrap infrastructure for a realistic external app that validates Crowdship flows without exposing a private product codebase.
 
 ## Current State
 
@@ -37,7 +37,7 @@ git config core.hooksPath .githooks
 
 ## Public Domain
 
-Production placeholder:
+Production bootstrap page:
 
 ```text
 https://example.aizenshtat.eu
