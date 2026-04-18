@@ -1,5 +1,11 @@
 const CACHE_NAME = 'example-reports-v1';
-const APP_SHELL = ['/', '/health.txt', '/manifest.webmanifest'];
+const SCOPE_URL = new URL(self.registration.scope);
+const SHELL_ROOT = new URL('./', SCOPE_URL).toString();
+const APP_SHELL = [
+  SHELL_ROOT,
+  new URL('health.txt', SCOPE_URL).toString(),
+  new URL('manifest.webmanifest', SCOPE_URL).toString(),
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
@@ -29,6 +35,6 @@ self.addEventListener('fetch', (event) => {
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
         return response;
       })
-      .catch(() => caches.match(event.request).then((cached) => cached || caches.match('/'))),
+      .catch(() => caches.match(event.request).then((cached) => cached || caches.match(SHELL_ROOT))),
   );
 });

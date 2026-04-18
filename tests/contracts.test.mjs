@@ -28,9 +28,11 @@ test('quality infrastructure files exist', () => {
     'index.html',
     'public/manifest.webmanifest',
     'public/sw.js',
+    'scripts/deploy-preview.sh',
     'scripts/quality-check.sh',
     'src/App.tsx',
     'src/main.tsx',
+    'infra/nginx/example.aizenshtat.eu.conf',
     'vite.config.ts',
   ].forEach(assertFile);
 });
@@ -78,10 +80,49 @@ test('package scripts expose local quality commands', () => {
 
   assert.equal(pkg.private, true);
   assert.equal(pkg.scripts.build, 'tsc --noEmit && vite build');
+  assert.equal(pkg.scripts['build:preview'], 'tsc --noEmit && vite build --mode preview');
+  assert.equal(pkg.scripts['deploy:preview'], 'bash scripts/deploy-preview.sh');
   assert.equal(pkg.scripts.quality, 'bash scripts/quality-check.sh');
   assert.equal(pkg.scripts.test, 'node --test tests/*.test.mjs');
   assert.equal(pkg.scripts.typecheck, 'tsc --noEmit');
   assert.equal(pkg.scripts.lint, 'tsc --noEmit && bash -n scripts/*.sh .githooks/pre-commit');
+});
+
+test('preview deployment uses nested static paths and relative assets', () => {
+  const viteConfig = read('vite.config.ts');
+  const deployPreview = read('scripts/deploy-preview.sh');
+  const nginx = read('infra/nginx/example.aizenshtat.eu.conf');
+  const app = read('src/App.tsx');
+  const main = read('src/main.tsx');
+  const manifest = JSON.parse(read('public/manifest.webmanifest'));
+  const sw = read('public/sw.js');
+  const html = read('index.html');
+  const deployStatic = read('scripts/deploy-static.sh');
+
+  assert.match(viteConfig, /mode === 'preview'/);
+  assert.match(viteConfig, /base:\s*mode === 'preview' \? '\.\/' : '\/'/);
+  assert.match(deployPreview, /build:preview/);
+  assert.match(deployPreview, /Usage: \$0 <contribution-id> \[source-repo-path\]/);
+  assert.match(deployPreview, /SOURCE_REPO_PATH="\$\{2:-\$\{PREVIEW_SOURCE_REPO_PATH:-\$REPO_ROOT\}\}"/);
+  assert.match(deployPreview, /SOURCE_REPO_ROOT="\$\(cd "\$SOURCE_REPO_PATH" && pwd\)"/);
+  assert.match(deployPreview, /cd "\$SOURCE_REPO_ROOT"/);
+  assert.match(deployPreview, /package\.json/);
+  assert.match(deployPreview, /PREVIEW_ROOT="\/var\/www\/\$\{APP_DOMAIN\}\/html\/previews"/);
+  assert.match(deployPreview, /TARGET="\$\{PREVIEW_ROOT\}\/\$\{CONTRIBUTION_ID\}"/);
+  assert.match(deployStatic, /--exclude 'previews\/'/);
+  assert.match(nginx, /location = \/mission/);
+  assert.match(nginx, /location ~ \^\/previews\/\(\[\^\/\]\+\)\(\/\.\*\)\?\$/);
+  assert.match(app, /href="\.\/mission"/);
+  assert.match(app, /src="\.\/icons\/icon-192\.png"/);
+  assert.match(app, /src="\.\/assets\/orbiter\.png"/);
+  assert.match(main, /register\('sw\.js'\)/);
+  assert.match(html, /href="\.\/manifest\.webmanifest"/);
+  assert.equal(manifest.start_url, './mission');
+  assert.equal(manifest.scope, './');
+  assert.equal(manifest.icons[0].src, './icons/icon-192.png');
+  assert.equal(manifest.icons[1].src, './icons/icon-512.png');
+  assert.match(sw, /self\.registration\.scope/);
+  assert.match(sw, /SHELL_ROOT/);
 });
 
 test('reference app implements orbital ops and pwa foundation', () => {

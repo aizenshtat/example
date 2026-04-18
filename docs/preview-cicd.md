@@ -10,12 +10,25 @@ Every Crowdship implementation branch should deploy to a real preview path that 
 https://example.aizenshtat.eu/previews/<contribution-id>/
 ```
 
+Preview builds are published as nested static files under the matching
+`/previews/<contribution-id>/` directory with relative asset references so the
+deployed HTML stays self-contained.
+
 ## Branch Contract
 
 Crowdship-created branches use:
 
 ```text
 crowdship/<contribution-id>-<short-slug>
+```
+
+Preview deploys should use `scripts/deploy-preview.sh <contribution-id>` and the
+preview build mode in Vite so the output stays scoped to that directory.
+When CI or a worker is operating from a worktree or alternate checkout, pass the
+source repo path as the second argument:
+
+```text
+scripts/deploy-preview.sh <contribution-id> /path/to/source-repo
 ```
 
 ## Pull Request Checks

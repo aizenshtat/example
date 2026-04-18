@@ -10,6 +10,7 @@ This repository now contains the first reference app slice:
 - PWA manifest, icons, and service worker in `public/`
 - Nginx host template at `infra/nginx/`
 - Local deploy helper at `scripts/deploy-static.sh`
+- Preview deploy helper at `scripts/deploy-preview.sh`
 - External app role at `docs/external-app-role.md`
 - Implementation plan at `docs/implementation-plan.md`
 - Admin setup at `docs/admin-setup.md`
@@ -54,3 +55,10 @@ sudo ./scripts/deploy-static.sh
 ```
 
 The script builds the app and publishes `dist/` to `/var/www/example.aizenshtat.eu/html`.
+
+Preview deployments publish `dist/` to `/var/www/example.aizenshtat.eu/html/previews/<contribution-id>/`.
+To build from a worktree or alternate checkout, pass the source repo path as the second argument:
+
+```bash
+sudo ./scripts/deploy-preview.sh <contribution-id> /path/to/source-repo
+```

@@ -150,8 +150,8 @@ export function App() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/" aria-label="Orbital Ops home">
-          <img src="/icons/icon-192.png" alt="" width="40" height="40" />
+        <a className="brand" href="./mission" aria-label="Orbital Ops mission">
+          <img src="./icons/icon-192.png" alt="" width="40" height="40" />
           <span>
             <strong>Orbital Ops</strong>
             <small>Mission telemetry</small>
@@ -190,7 +190,7 @@ export function App() {
           <span className="signal-ping signal-ping--two" aria-hidden="true" />
           <img
             className="orbiter-art"
-            src="/assets/orbiter.png"
+            src="./assets/orbiter.png"
             alt=""
             width="160"
             height="160"

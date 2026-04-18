@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc --noEmit && vite build",
+    "build:preview": "tsc --noEmit && vite build --mode preview",
+    "deploy:preview": "bash scripts/deploy-preview.sh",
     "preview": "vite preview --host 0.0.0.0",
     "quality": "bash scripts/quality-check.sh",
     "test": "node --test tests/*.test.mjs",
