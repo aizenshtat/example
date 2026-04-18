@@ -35,6 +35,22 @@ test('App opens Crowdship with safe context for the anomaly-replay request', () 
   assert.match(app, /__EXAMPLE_CROWDSHIP_CONTEXT__/);
 });
 
+test('App renders anomaly pressure replay only for relevant selected anomalies', () => {
+  const app = read('src/App.tsx');
+  const data = read('src/data.ts');
+  const styles = read('src/styles.css');
+
+  assert.match(app, /Pressure replay/);
+  assert.match(app, /Pressure trend around \{selectedEvent\.id\}/);
+  assert.match(app, /before, during, and after/);
+  assert.match(app, /pressureReplay \? \(/);
+  assert.match(app, /No anomaly pressure comparison/);
+  assert.match(data, /pressureReplayProfiles/);
+  assert.match(data, /'signal-drop-17'/);
+  assert.match(styles, /pressure-widget/);
+  assert.match(styles, /pressure-chart/);
+});
+
 test('App rejects legacy report and demo-board copy', () => {
   const app = read('src/App.tsx');
   const styles = read('src/styles.css');

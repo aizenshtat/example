@@ -61,10 +61,12 @@ img {
 
 h1,
 h2,
+h3,
 p,
 dl,
 dd,
-dt {
+dt,
+small {
   margin: 0;
 }
 
@@ -241,10 +243,17 @@ h2 {
   line-height: 1.15;
 }
 
+h3 {
+  font-size: 18px;
+  line-height: 1.2;
+}
+
 .intro,
 .mission-note,
 .empty-state span,
-.detail-grid p {
+.detail-grid p,
+.pressure-widget__lead,
+.pressure-phase small {
   color: var(--muted);
   font-size: 15px;
   line-height: 1.5;
@@ -408,7 +417,10 @@ h2 {
 .scene-stat,
 .mission-stat,
 .detail-grid dl div,
-.empty-state {
+.empty-state,
+.pressure-widget,
+.pressure-metrics div,
+.pressure-phase {
   border-radius: 8px;
 }
 
@@ -552,7 +564,15 @@ h2 {
   margin-bottom: 12px;
 }
 
-.event-list {
+.section-heading--tight {
+  margin-bottom: 0;
+}
+
+.event-list,
+.detail-stack,
+.pressure-widget,
+.pressure-metrics,
+.pressure-phases {
   display: grid;
   gap: 10px;
 }
@@ -687,10 +707,10 @@ h2 {
   padding: 16px;
 }
 
-.detail-grid {
+.detail-grid,
+.pressure-widget {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 8px;
   display: grid;
   gap: 14px;
   padding: 16px;
@@ -702,19 +722,128 @@ h2 {
   line-height: 1.55;
 }
 
-.detail-grid dl {
+.detail-grid dl,
+.pressure-metrics,
+.pressure-phases {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.detail-grid dl div {
+.detail-grid dl div,
+.pressure-metrics div,
+.pressure-phase {
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.08);
   display: grid;
   gap: 4px;
   min-height: 56px;
   padding: 12px;
+}
+
+.pressure-widget {
+  border-color: rgba(127, 212, 255, 0.26);
+  box-shadow: inset 0 0 0 1px rgba(127, 212, 255, 0.05);
+}
+
+.pressure-chart {
+  background:
+    linear-gradient(180deg, rgba(127, 212, 255, 0.08), rgba(255, 255, 255, 0.02)),
+    rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  min-height: 220px;
+  overflow: hidden;
+  padding: 14px 12px 10px;
+  position: relative;
+}
+
+.pressure-chart__phases {
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  position: absolute;
+}
+
+.pressure-chart__phase--before {
+  background: rgba(127, 212, 255, 0.06);
+}
+
+.pressure-chart__phase--during {
+  background: rgba(255, 77, 109, 0.09);
+}
+
+.pressure-chart__phase--after {
+  background: rgba(39, 224, 160, 0.06);
+}
+
+.pressure-chart svg {
+  display: block;
+  height: 168px;
+  position: relative;
+  width: 100%;
+  z-index: 1;
+}
+
+.pressure-chart__line {
+  fill: none;
+  stroke: var(--sky);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.2;
+}
+
+.pressure-chart__point {
+  stroke: rgba(4, 6, 8, 0.9);
+  stroke-width: 1;
+}
+
+.pressure-chart__point--before {
+  fill: var(--sky);
+}
+
+.pressure-chart__point--during {
+  fill: var(--accent);
+}
+
+.pressure-chart__point--after {
+  fill: var(--good);
+}
+
+.pressure-chart__labels {
+  color: var(--muted);
+  display: grid;
+  font-size: 12px;
+  font-weight: 750;
+  gap: 6px;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  position: relative;
+  text-align: center;
+  z-index: 1;
+}
+
+.pressure-phase span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.pressure-phase strong {
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.pressure-phase--before {
+  border-color: rgba(127, 212, 255, 0.24);
+}
+
+.pressure-phase--during {
+  border-color: rgba(255, 77, 109, 0.28);
+}
+
+.pressure-phase--after {
+  border-color: rgba(39, 224, 160, 0.24);
 }
 
 dt {
@@ -872,5 +1001,10 @@ dd {
   .event-band,
   .detail-band {
     min-width: 0;
+  }
+
+  .pressure-metrics,
+  .pressure-phases {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
