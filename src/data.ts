@@ -2,6 +2,12 @@ export type CraftFilter = 'all' | 'astra-7' | 'lumen-3' | 'mira-2';
 export type WindowFilter = 'last-30' | 'last-6h' | 'europa-pass';
 export type MissionSeverity = 'critical' | 'watch' | 'stable';
 
+export type PressureReplayPoint = {
+  label: string;
+  pressure: number;
+  phase: 'before' | 'during' | 'after';
+};
+
 export type MissionEvent = {
   id: string;
   title: string;
@@ -14,6 +20,7 @@ export type MissionEvent = {
   packetLoss: string;
   latency: string;
   timestamp: string;
+  anomalyKind?: 'signal-drop' | 'thermal-drift' | 'battery-recovery' | 'relay-handshake' | 'payload-idle';
 };
 
 export type MissionTelemetry = {
@@ -63,6 +70,7 @@ export const missionEvents: MissionEvent[] = [
     packetLoss: '18%',
     latency: '940 ms',
     timestamp: 'T+14:08',
+    anomalyKind: 'signal-drop',
   },
   {
     id: 'thermal-drift-04',
@@ -76,6 +84,7 @@ export const missionEvents: MissionEvent[] = [
     packetLoss: '4%',
     latency: '680 ms',
     timestamp: 'T+10:42',
+    anomalyKind: 'thermal-drift',
   },
   {
     id: 'battery-recovery-12',
@@ -89,6 +98,7 @@ export const missionEvents: MissionEvent[] = [
     packetLoss: '1%',
     latency: '410 ms',
     timestamp: 'T+07:19',
+    anomalyKind: 'battery-recovery',
   },
   {
     id: 'relay-handshake-09',
@@ -102,6 +112,7 @@ export const missionEvents: MissionEvent[] = [
     packetLoss: '6%',
     latency: '630 ms',
     timestamp: 'T+03:51',
+    anomalyKind: 'relay-handshake',
   },
   {
     id: 'payload-idle-22',
@@ -115,5 +126,20 @@ export const missionEvents: MissionEvent[] = [
     packetLoss: '2%',
     latency: '440 ms',
     timestamp: 'T+01:27',
+    anomalyKind: 'payload-idle',
   },
 ];
+
+export const pressureReplayProfiles: Partial<Record<string, PressureReplayPoint[]>> = {
+  'signal-drop-17': [
+    { label: 'T-12', pressure: 94, phase: 'before' },
+    { label: 'T-09', pressure: 95, phase: 'before' },
+    { label: 'T-06', pressure: 93, phase: 'before' },
+    { label: 'T-03', pressure: 92, phase: 'before' },
+    { label: 'T±00', pressure: 84, phase: 'during' },
+    { label: 'T+03', pressure: 81, phase: 'during' },
+    { label: 'T+06', pressure: 87, phase: 'after' },
+    { label: 'T+09', pressure: 91, phase: 'after' },
+    { label: 'T+12', pressure: 93, phase: 'after' },
+  ],
+};

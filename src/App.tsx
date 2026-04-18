@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   missionEvents,
+  pressureReplayProfiles,
   telemetryProfiles,
   type CraftFilter,
   type MissionSeverity,
+  type PressureReplayPoint,
   type WindowFilter,
 } from './data';
 
@@ -24,6 +26,12 @@ const severityLabels: Record<MissionSeverity, string> = {
   critical: 'Critical',
   stable: 'Stable',
   watch: 'Watch',
+};
+
+const phaseLabels: Record<PressureReplayPoint['phase'], string> = {
+  before: 'Before anomaly',
+  during: 'Anomaly window',
+  after: 'After anomaly',
 };
 
 const CROWDSHIP_REQUEST = {
@@ -70,6 +78,26 @@ function countSeverities() {
   } satisfies Record<MissionSeverity, number>;
 }
 
+function buildPressurePath(points: PressureReplayPoint[]) {
+  if (points.length === 0) {
+    return '';
+  }
+
+  const maxPressure = Math.max(...points.map((point) => point.pressure));
+  const minPressure = Math.min(...points.map((point) => point.pressure));
+  const range = Math.max(maxPressure - minPressure, 1);
+  const width = 100;
+  const height = 100;
+
+  return points
+    .map((point, index) => {
+      const x = points.length === 1 ? width / 2 : (index / (points.length - 1)) * width;
+      const y = height - ((point.pressure - minPressure) / range) * height;
+      return `${index === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
+    })
+    .join(' ');
+}
+
 export function App() {
   const [craft, setCraft] = useState<CraftFilter>('all');
   const [windowFilter, setWindowFilter] = useState<WindowFilter>('last-30');
@@ -113,6 +141,17 @@ export function App() {
     () => buildContext(craft, windowFilter, selectedEvent?.id ?? null),
     [craft, selectedEvent?.id, windowFilter],
   );
+
+  const pressureReplay = selectedEvent ? pressureReplayProfiles[selectedEvent.id] ?? null : null;
+  const pressurePath = pressureReplay ? buildPressurePath(pressureReplay) : '';
+  const pressureValues = pressureReplay?.map((point) => point.pressure) ?? [];
+  const pressureMin = pressureValues.length > 0 ? Math.min(...pressureValues) : null;
+  const pressureMax = pressureValues.length > 0 ? Math.max(...pressureValues) : null;
+  const pressureDip =
+    pressureMin !== null && pressureMax !== null ? `${pressureMax - pressureMin} kPa swing` : null;
+  const pressureWindowLabel = pressureReplay
+    ? Array.from(new Set(pressureReplay.map((point) => phaseLabels[point.phase]))).join(' • ')
+    : null;
 
   useEffect(() => {
     if (selectedEvent && selectedEvent.id !== selectedEventId) {
@@ -210,7 +249,7 @@ export function App() {
             </span>
           </div>
           <p className="mission-note">
-            The selected signal drop still needs inline replay on the mission surface.
+            Pressure replay now tracks the selected anomaly inline with the rest of mission telemetry.
           </p>
         </div>
 
@@ -278,10 +317,12 @@ export function App() {
           <small>{selectedEvent?.severity ? formatSeverity(selectedEvent.severity) : 'Waiting for selection'}</small>
         </article>
         <article className="mission-stat mission-stat--export">
-          <span>Replay gap</span>
-          <strong>Inline replay missing</strong>
+          <span>Replay status</span>
+          <strong>{pressureReplay ? 'Pressure replay online' : 'No pressure replay'}</strong>
           <small>
-            {selectedEvent?.nextStep ?? 'Pick a report to inspect the replay gap before the next maneuver.'}
+            {pressureReplay
+              ? `${selectedEvent?.title ?? 'Selected anomaly'} now includes before, during, and after pressure context.`
+              : selectedEvent?.nextStep ?? 'Pick a report to inspect anomaly-linked pressure context.'}
           </small>
         </article>
       </section>
@@ -393,27 +434,125 @@ export function App() {
           </div>
 
           {selectedEvent ? (
-            <div className="detail-grid">
-              <p className="detail-lead">{selectedEvent.summary}</p>
-              <p>{selectedEvent.nextStep}</p>
-              <dl>
-                <div>
-                  <dt>Craft</dt>
-                  <dd>{formatCraft(selectedEvent.craft)}</dd>
+            <div className="detail-stack">
+              <div className="detail-grid">
+                <p className="detail-lead">{selectedEvent.summary}</p>
+                <p>{selectedEvent.nextStep}</p>
+                <dl>
+                  <div>
+                    <dt>Craft</dt>
+                    <dd>{formatCraft(selectedEvent.craft)}</dd>
+                  </div>
+                  <div>
+                    <dt>Signal</dt>
+                    <dd>{selectedEvent.signal}</dd>
+                  </div>
+                  <div>
+                    <dt>Packet loss</dt>
+                    <dd>{selectedEvent.packetLoss}</dd>
+                  </div>
+                  <div>
+                    <dt>Latency</dt>
+                    <dd>{selectedEvent.latency}</dd>
+                  </div>
+                </dl>
+              </div>
+
+              {pressureReplay ? (
+                <section className="pressure-widget" aria-labelledby="pressure-title">
+                  <div className="section-heading section-heading--tight">
+                    <div>
+                      <p className="eyebrow">Pressure replay</p>
+                      <h3 id="pressure-title">Pressure trend around {selectedEvent.id}</h3>
+                    </div>
+                    <div className="context-chip">{pressureWindowLabel}</div>
+                  </div>
+
+                  <p className="pressure-widget__lead">
+                    Compare pressure before, during, and after the selected anomaly without leaving
+                    the mission workflow.
+                  </p>
+
+                  <div className="pressure-chart" role="img" aria-label={`Pressure trend comparison for ${selectedEvent.title}`}>
+                    <div className="pressure-chart__phases" aria-hidden="true">
+                      <span className="pressure-chart__phase pressure-chart__phase--before" />
+                      <span className="pressure-chart__phase pressure-chart__phase--during" />
+                      <span className="pressure-chart__phase pressure-chart__phase--after" />
+                    </div>
+                    <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                      <path className="pressure-chart__line" d={pressurePath} />
+                      {pressureReplay.map((point, index) => {
+                        const x = pressureReplay.length === 1 ? 50 : (index / (pressureReplay.length - 1)) * 100;
+                        const maxPressure = Math.max(...pressureReplay.map((entry) => entry.pressure));
+                        const minPressure = Math.min(...pressureReplay.map((entry) => entry.pressure));
+                        const range = Math.max(maxPressure - minPressure, 1);
+                        const y = 100 - ((point.pressure - minPressure) / range) * 100;
+
+                        return (
+                          <circle
+                            key={`${point.label}-${point.phase}`}
+                            className={`pressure-chart__point pressure-chart__point--${point.phase}`}
+                            cx={x}
+                            cy={y}
+                            r="2.2"
+                          />
+                        );
+                      })}
+                    </svg>
+                    <div className="pressure-chart__labels" aria-hidden="true">
+                      {pressureReplay.map((point) => (
+                        <span key={point.label}>{point.label}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <dl className="pressure-metrics">
+                    <div>
+                      <dt>Peak pressure</dt>
+                      <dd>{pressureMax} kPa</dd>
+                    </div>
+                    <div>
+                      <dt>Lowest pressure</dt>
+                      <dd>{pressureMin} kPa</dd>
+                    </div>
+                    <div>
+                      <dt>Replay spread</dt>
+                      <dd>{pressureDip}</dd>
+                    </div>
+                  </dl>
+
+                  <div className="pressure-phases" role="list" aria-label="Pressure replay phases">
+                    {(['before', 'during', 'after'] as const).map((phase) => {
+                      const points = pressureReplay.filter((point) => point.phase === phase);
+                      if (points.length === 0) {
+                        return null;
+                      }
+
+                      const average = Math.round(
+                        points.reduce((total, point) => total + point.pressure, 0) / points.length,
+                      );
+
+                      return (
+                        <div key={phase} className={`pressure-phase pressure-phase--${phase}`} role="listitem">
+                          <span>{phaseLabels[phase]}</span>
+                          <strong>{average} kPa avg</strong>
+                          <small>
+                            {points[0].label} to {points[points.length - 1].label}
+                          </small>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              ) : (
+                <div className="empty-state">
+                  <strong>No anomaly pressure comparison</strong>
+                  <span>
+                    Select a signal-drop anomaly to view pressure before, during, and after the
+                    event window.
+                  </span>
                 </div>
-                <div>
-                  <dt>Signal</dt>
-                  <dd>{selectedEvent.signal}</dd>
-                </div>
-                <div>
-                  <dt>Packet loss</dt>
-                  <dd>{selectedEvent.packetLoss}</dd>
-                </div>
-                <div>
-                  <dt>Latency</dt>
-                  <dd>{selectedEvent.latency}</dd>
-                </div>
-              </dl>
+              )}
             </div>
           ) : (
             <div className="empty-state">
