@@ -27,7 +27,6 @@ const severityLabels: Record<MissionSeverity, string> = {
 };
 
 const CROWDSHIP_REQUEST = {
-  title: 'Add anomaly replay for signal drops',
   type: 'feature_request' as const,
 };
 
@@ -432,7 +431,7 @@ declare global {
   interface Window {
     __EXAMPLE_CROWDSHIP_CONTEXT__?: CrowdshipContext;
     Crowdship?: {
-      open: (request: { title: string; type: 'feature_request' }) => void;
+      open: (request: { title?: string; type: 'feature_request' }) => void;
       setContext: (context: CrowdshipContext) => void;
     };
   }

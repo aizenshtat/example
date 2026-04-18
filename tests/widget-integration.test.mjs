@@ -28,7 +28,7 @@ test('App opens Crowdship with safe context for the anomaly-replay request', () 
   assert.match(app, /window\.Crowdship\?\.setContext\(crowdshipContext\)/);
   assert.match(app, /window\.Crowdship\?\.open\(CROWDSHIP_REQUEST\)/);
   assert.match(app, /type:\s*'feature_request'/);
-  assert.match(app, /Add anomaly replay for signal drops/);
+  assert.doesNotMatch(app, /Add anomaly replay for signal drops/);
   assert.match(app, /route:\s*'\/mission'/);
   assert.match(app, /selectedObjectType:\s*'anomaly'/);
   assert.match(app, /signal-drop-17/);

@@ -132,7 +132,7 @@ test('reference app implements orbital ops and pwa foundation', () => {
   const html = read('index.html');
 
   assert.match(app, /Orbital Ops/);
-  assert.match(app, /Add anomaly replay for signal drops/);
+  assert.match(app, /type:\s*'feature_request'/);
   assert.match(app, /Route \/mission/);
   assert.match(app, /selectedObjectType:\s*'anomaly'/);
   assert.match(app, /signal-drop-17/);
