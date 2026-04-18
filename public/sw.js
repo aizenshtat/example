@@ -1,4 +1,4 @@
-const CACHE_NAME = 'example-reports-v1';
+const CACHE_NAME = 'example-orbital-ops-v2';
 const SCOPE_URL = new URL(self.registration.scope);
 const SHELL_ROOT = new URL('./', SCOPE_URL).toString();
 const APP_SHELL = [
@@ -31,10 +31,24 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
         return response;
       })
-      .catch(() => caches.match(event.request).then((cached) => cached || caches.match(SHELL_ROOT))),
+      .catch(() =>
+        caches.match(event.request).then((cached) => {
+          if (cached) {
+            return cached;
+          }
+
+          if (event.request.mode === 'navigate') {
+            return caches.match(SHELL_ROOT);
+          }
+
+          return caches.match(SHELL_ROOT);
+        }),
+      ),
   );
 });

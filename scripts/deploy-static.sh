@@ -12,6 +12,12 @@ npm run build
 
 install -d -m 755 "$TARGET"
 rsync -a --delete --exclude 'previews/' "${BUILD_DIR}/" "$TARGET/"
+
+# Keep the application shell in place even if rsync skips a top-level file during deploy.
+install -m 644 "${BUILD_DIR}/index.html" "${TARGET}/index.html"
+install -m 644 "${BUILD_DIR}/sw.js" "${TARGET}/sw.js"
+install -m 644 "${BUILD_DIR}/manifest.webmanifest" "${TARGET}/manifest.webmanifest"
+
 find "$TARGET" -type d -exec chmod 755 {} \;
 find "$TARGET" -type f -exec chmod 644 {} \;
 
