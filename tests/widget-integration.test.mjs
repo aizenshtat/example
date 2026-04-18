@@ -10,16 +10,19 @@ function read(relativePath) {
   return readFileSync(join(root, relativePath), 'utf8');
 }
 
-test('index.html loads the production Crowdship widget', () => {
-  const html = read('index.html');
+test('main bootstraps the Crowdship widget with env-backed defaults', () => {
+  const main = read('src/main.tsx');
+  const bootstrap = read('src/crowdship.ts');
+  const envExample = read('.env.example');
 
-  assert.match(
-    html,
-    /src="https:\/\/crowdship\.aizenshtat\.eu\/widget\/v1\.js"/,
-  );
-  assert.match(html, /data-crowdship-project="example"/);
-  assert.match(html, /data-crowdship-environment="production"/);
-  assert.match(html, /data-crowdship-launcher="manual"/);
+  assert.match(main, /ensureCrowdshipScript\(\)/);
+  assert.match(bootstrap, /https:\/\/crowdship\.aizenshtat\.eu\/widget\/v1\.js/);
+  assert.match(bootstrap, /DEFAULT_CROWDSHIP_PROJECT = 'example'/);
+  assert.match(bootstrap, /DEFAULT_CROWDSHIP_ENVIRONMENT = 'production'/);
+  assert.match(bootstrap, /dataset\.crowdshipLauncher = config\.launcher/);
+  assert.match(envExample, /VITE_CROWDSHIP_WIDGET_SRC=/);
+  assert.match(envExample, /VITE_CROWDSHIP_PROJECT=/);
+  assert.match(envExample, /VITE_CROWDSHIP_ENVIRONMENT=/);
 });
 
 test('App opens Crowdship with safe context for the anomaly-replay request', () => {

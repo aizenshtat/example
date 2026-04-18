@@ -107,9 +107,16 @@ test('preview deployment uses nested static paths and relative assets', () => {
   assert.match(deployPreview, /SOURCE_REPO_ROOT="\$\(cd "\$SOURCE_REPO_PATH" && pwd\)"/);
   assert.match(deployPreview, /cd "\$SOURCE_REPO_ROOT"/);
   assert.match(deployPreview, /package\.json/);
-  assert.match(deployPreview, /PREVIEW_ROOT="\/var\/www\/\$\{APP_DOMAIN\}\/html\/previews"/);
+  assert.match(deployPreview, /PREVIEW_ROOT="\$\{PREVIEW_ROOT:-\/var\/www\/\$\{APP_DOMAIN\}\/html\/previews\}"/);
   assert.match(deployPreview, /TARGET="\$\{PREVIEW_ROOT\}\/\$\{CONTRIBUTION_ID\}"/);
+  assert.match(deployPreview, /DEPLOY_HOST="\$\{DEPLOY_HOST:-\}"/);
+  assert.match(deployPreview, /DEPLOY_USER="\$\{DEPLOY_USER:-\}"/);
+  assert.match(deployPreview, /DEPLOY_PORT="\$\{DEPLOY_PORT:-22\}"/);
+  assert.match(deployPreview, /ssh -p "\$DEPLOY_PORT" "\$REMOTE"/);
   assert.match(deployStatic, /--exclude 'previews\/'/);
+  assert.match(deployStatic, /DEPLOY_HOST="\$\{DEPLOY_HOST:-\}"/);
+  assert.match(deployStatic, /DEPLOY_USER="\$\{DEPLOY_USER:-\}"/);
+  assert.match(deployStatic, /DEPLOY_PORT="\$\{DEPLOY_PORT:-22\}"/);
   assert.match(nginx, /location = \/mission/);
   assert.match(nginx, /location ~ \^\/previews\/\(\[\^\/\]\+\)\(\/\.\*\)\?\$/);
   assert.match(app, /href="\.\/mission"/);
@@ -127,6 +134,7 @@ test('preview deployment uses nested static paths and relative assets', () => {
 
 test('reference app implements orbital ops and pwa foundation', () => {
   const app = read('src/App.tsx');
+  const bootstrap = read('src/crowdship.ts');
   const manifest = JSON.parse(read('public/manifest.webmanifest'));
   const sw = read('public/sw.js');
   const html = read('index.html');
@@ -137,6 +145,8 @@ test('reference app implements orbital ops and pwa foundation', () => {
   assert.match(app, /selectedObjectType:\s*'anomaly'/);
   assert.match(app, /signal-drop-17/);
   assert.match(app, /__EXAMPLE_CROWDSHIP_CONTEXT__/);
+  assert.match(bootstrap, /getCrowdshipBootstrapConfig/);
+  assert.match(bootstrap, /dataset\.crowdshipProject = config\.project/);
   assert.equal(manifest.name, 'Orbital Ops');
   assert.equal(manifest.short_name, 'Orbital');
   assert.match(manifest.description, /mission-control telemetry/i);

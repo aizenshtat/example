@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_DOMAIN="example.aizenshtat.eu"
+APP_DOMAIN="${APP_DOMAIN:-example.aizenshtat.eu}"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PREVIEW_ROOT="/var/www/${APP_DOMAIN}/html/previews"
+PREVIEW_ROOT="${PREVIEW_ROOT:-/var/www/${APP_DOMAIN}/html/previews}"
+DEPLOY_HOST="${DEPLOY_HOST:-}"
+DEPLOY_USER="${DEPLOY_USER:-}"
+DEPLOY_PORT="${DEPLOY_PORT:-22}"
+SKIP_BUILD="${SKIP_BUILD:-0}"
 CONTRIBUTION_ID="${1:-${PREVIEW_CONTRIBUTION_ID:-}}"
 SOURCE_REPO_PATH="${2:-${PREVIEW_SOURCE_REPO_PATH:-$REPO_ROOT}}"
 SOURCE_REPO_ROOT=""
@@ -33,13 +37,34 @@ fi
 
 cd "$SOURCE_REPO_ROOT"
 
-npm run build:preview
+if [[ "$SKIP_BUILD" != "1" ]]; then
+  npm run build:preview
+fi
+
+if [[ ! -d "$BUILD_DIR" ]]; then
+  echo "Build directory must exist before deploy: $BUILD_DIR" >&2
+  exit 1
+fi
 
 TARGET="${PREVIEW_ROOT}/${CONTRIBUTION_ID}"
 
-install -d -m 755 "$TARGET"
-rsync -a --delete "${BUILD_DIR}/" "$TARGET/"
-find "$TARGET" -type d -exec chmod 755 {} \;
-find "$TARGET" -type f -exec chmod 644 {} \;
+if [[ -n "$DEPLOY_HOST" ]]; then
+  if [[ -z "$DEPLOY_USER" ]]; then
+    echo "DEPLOY_USER must be set when DEPLOY_HOST is provided." >&2
+    exit 1
+  fi
+
+  REMOTE="${DEPLOY_USER}@${DEPLOY_HOST}"
+  RSYNC_RSH="ssh -p ${DEPLOY_PORT}"
+
+  ssh -p "$DEPLOY_PORT" "$REMOTE" "install -d -m 755 '$TARGET'"
+  rsync -a --delete -e "$RSYNC_RSH" "${BUILD_DIR}/" "${REMOTE}:${TARGET}/"
+  ssh -p "$DEPLOY_PORT" "$REMOTE" "find '$TARGET' -type d -exec chmod 755 {} \; && find '$TARGET' -type f -exec chmod 644 {} \;"
+else
+  install -d -m 755 "$TARGET"
+  rsync -a --delete "${BUILD_DIR}/" "$TARGET/"
+  find "$TARGET" -type d -exec chmod 755 {} \;
+  find "$TARGET" -type f -exec chmod 644 {} \;
+fi
 
 echo "Published preview ${CONTRIBUTION_ID} to ${TARGET}"

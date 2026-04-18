@@ -22,6 +22,7 @@ Read before implementation:
 - `docs/preview-cicd.md`
 - `docs/sentry.md`
 - `docs/ui-quality-contract.md`
+- `../crowdship/docs/customer-onboarding.md`
 - `.agents/skills/example-widget-integration/SKILL.md`
 - `.agents/skills/example-widget-integration/references/external-app-ux.md`
 - `.agents/skills/example-widget-integration/references/safe-context.md`
@@ -32,6 +33,10 @@ For the broader product loop, also read:
 - `../crowdship/docs/widget-contract.md`
 - `../crowdship/docs/contribution-lifecycle.md`
 - `../crowdship/docs/preview-cicd.md`
+
+## Ownership Note
+
+The current `example` deployment is a reference integration where one operator owns both the example repo and Crowdship repo. The durable product target is different: a customer-owned app installs the widget, keeps ownership of its own repository and CI/CD, and authorizes Crowdship automation through scoped integrations or a customer-run worker.
 
 ## Phase 1: Mission Console Product Shell
 

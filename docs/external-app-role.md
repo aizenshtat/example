@@ -8,6 +8,8 @@ The example app is the first reference integration target. It should be useful f
 
 All integration behavior should be real. The example repo should receive real Crowdship-generated branches, real pull requests, real CI checks, real preview deployments, and real production deploys.
 
+For the hackathon reference setup, the same operator currently owns both Crowdship and this example app. That is only a convenient reference deployment. The intended product model is that a customer owns their UI, repository, CI/CD, and deploy rules while Crowdship remains an external service they install into their app.
+
 ## Reference Product
 
 The app should feel like a high-energy mission-control telemetry product an operations team could actually use.
@@ -61,6 +63,13 @@ The example app must not pass:
 - Cookies.
 - Internal API responses.
 - Private customer records.
+
+In the durable customer-owned model, the example app analogue should only need to:
+
+- install the widget snippet,
+- pass safe runtime context,
+- authorize repository automation through an owner-controlled integration,
+- keep previews and production deploys inside customer CI/CD.
 
 ## Seed Request
 

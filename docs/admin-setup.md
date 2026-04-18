@@ -4,6 +4,8 @@
 
 Example app admins should be able to install Crowdship, configure intake, and understand what automation can do in their repository.
 
+In the durable product model, the admin owns the repository and deployment pipeline. Crowdship should not require direct shell access to the app server or a checked-out copy of the repository on the Crowdship host.
+
 ## Install Widget
 
 Add the widget script to the app shell:
@@ -36,6 +38,19 @@ Admins choose:
 - Maximum implementation job runtime.
 - Whether requester-approved previews can open voting automatically.
 - Vote threshold for core team review.
+
+## Repository Ownership Model
+
+Preferred setup:
+
+- Install the Crowdship widget in the app UI.
+- Authorize repository automation through a scoped integration such as a GitHub App installation.
+- Keep preview and production deploys in customer-controlled CI/CD.
+- Store secrets in customer-controlled secret stores or GitHub Actions secrets.
+
+Optional stricter setup:
+
+- Run the implementation worker inside customer infrastructure instead of using hosted repository writes.
 
 ## Admin Responsibilities
 
