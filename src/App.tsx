@@ -210,7 +210,8 @@ export function App() {
             </span>
           </div>
           <p className="mission-note">
-            The selected signal drop still needs inline replay on the mission surface.
+            External pressure is tracking at {telemetry.externalPressure} for the current mission
+            view.
           </p>
         </div>
 
@@ -233,9 +234,7 @@ export function App() {
             height="160"
           />
           <div className="scene-hud">
-            <span>
-              {selectedEvent ? `${selectedEvent.title}` : 'Mission telemetry'}
-            </span>
+            <span>{selectedEvent ? `${selectedEvent.title}` : 'Mission telemetry'}</span>
             <strong>
               Report {selectedEventPosition} • Packet loss {selectedEvent?.packetLoss ?? '0%'}
             </strong>
@@ -254,8 +253,8 @@ export function App() {
               <dd>{telemetry.thermal}</dd>
             </div>
             <div className="scene-stat">
-              <dt>Latency</dt>
-              <dd>{telemetry.latency}</dd>
+              <dt>External pressure</dt>
+              <dd>{telemetry.externalPressure}</dd>
             </div>
           </dl>
         </div>
@@ -265,23 +264,27 @@ export function App() {
         <article className="mission-stat">
           <span>Visible reports</span>
           <strong>{visibleEvents.length}</strong>
-          <small>{severityCounts.critical} critical, {severityCounts.watch} watch, {severityCounts.stable} stable</small>
+          <small>
+            {severityCounts.critical} critical, {severityCounts.watch} watch, {severityCounts.stable}{' '}
+            stable
+          </small>
         </article>
         <article className="mission-stat">
           <span>Focus craft</span>
           <strong>{telemetryCraftLabel}</strong>
           <small>Window {windowLabels[windowFilter]}</small>
         </article>
-        <article className="mission-stat">
-          <span>Current tempo</span>
-          <strong>{selectedEvent?.timestamp ?? 'T+00:00'}</strong>
-          <small>{selectedEvent?.severity ? formatSeverity(selectedEvent.severity) : 'Waiting for selection'}</small>
+        <article className="mission-stat mission-stat--pressure">
+          <span>External pressure</span>
+          <strong>{telemetry.externalPressure}</strong>
+          <small>Environmental reading synced to the current mission telemetry feed.</small>
         </article>
         <article className="mission-stat mission-stat--export">
           <span>Replay gap</span>
           <strong>Inline replay missing</strong>
           <small>
-            {selectedEvent?.nextStep ?? 'Pick a report to inspect the replay gap before the next maneuver.'}
+            {selectedEvent?.nextStep ??
+              'Pick a report to inspect the replay gap before the next maneuver.'}
           </small>
         </article>
       </section>

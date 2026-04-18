@@ -21,6 +21,7 @@ export type MissionTelemetry = {
   battery: string;
   thermal: string;
   latency: string;
+  externalPressure: string;
 };
 
 export const telemetryProfiles: Record<CraftFilter, MissionTelemetry> = {
@@ -29,24 +30,28 @@ export const telemetryProfiles: Record<CraftFilter, MissionTelemetry> = {
     battery: '64%',
     thermal: '-18 C',
     latency: '690 ms',
+    externalPressure: '0.62 kPa',
   },
   'astra-7': {
     signal: '42%',
     battery: '61%',
     thermal: '-28 C',
     latency: '940 ms',
+    externalPressure: '0.41 kPa',
   },
   'lumen-3': {
     signal: '88%',
     battery: '73%',
     thermal: '-12 C',
     latency: '420 ms',
+    externalPressure: '0.74 kPa',
   },
   'mira-2': {
     signal: '79%',
     battery: '58%',
     thermal: '-21 C',
     latency: '610 ms',
+    externalPressure: '0.53 kPa',
   },
 };
 
