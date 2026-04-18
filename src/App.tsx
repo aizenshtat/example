@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   missionEvents,
   telemetryProfiles,
+  type CabinPressure,
   type CraftFilter,
   type MissionSeverity,
+  type PressureSeverity,
   type WindowFilter,
 } from './data';
 
@@ -24,6 +26,18 @@ const severityLabels: Record<MissionSeverity, string> = {
   critical: 'Critical',
   stable: 'Stable',
   watch: 'Watch',
+};
+
+const pressureSeverityLabels: Record<PressureSeverity, string> = {
+  normal: 'Normal',
+  warning: 'Warning',
+  critical: 'Critical',
+};
+
+const pressureGaugeFill: Record<PressureSeverity, number> = {
+  normal: 0.82,
+  warning: 0.58,
+  critical: 0.28,
 };
 
 const CROWDSHIP_REQUEST = {
@@ -69,6 +83,55 @@ function countSeverities() {
     stable: 0,
     watch: 0,
   } satisfies Record<MissionSeverity, number>;
+}
+
+function getPressureState(cabinPressure: CabinPressure) {
+  if (!cabinPressure.value || !cabinPressure.severity) {
+    return {
+      fill: 0,
+      label: 'No data',
+      modifier: 'disabled',
+      value: 'No data',
+    } as const;
+  }
+
+  return {
+    fill: pressureGaugeFill[cabinPressure.severity],
+    label: pressureSeverityLabels[cabinPressure.severity],
+    modifier: cabinPressure.severity,
+    value: cabinPressure.value,
+  } as const;
+}
+
+function CabinPressureGauge({
+  cabinPressure,
+  compact = false,
+}: {
+  cabinPressure: CabinPressure;
+  compact?: boolean;
+}) {
+  const state = getPressureState(cabinPressure);
+
+  return (
+    <div
+      className={`pressure-gauge pressure-gauge--${state.modifier}${
+        compact ? ' pressure-gauge--compact' : ''
+      }`}
+      aria-label={`Cabin pressure ${state.value}, status ${state.label}`}
+    >
+      <div className="pressure-gauge__dial" aria-hidden="true">
+        <div
+          className="pressure-gauge__fill"
+          style={{ transform: `scaleX(${state.fill})` }}
+        />
+      </div>
+      <div className="pressure-gauge__copy">
+        <span className="pressure-gauge__label">Cabin pressure</span>
+        <strong>{state.value}</strong>
+        <small>{state.label}</small>
+      </div>
+    </div>
+  );
 }
 
 export function App() {
@@ -234,9 +297,7 @@ export function App() {
             height="160"
           />
           <div className="scene-hud">
-            <span>
-              {selectedEvent ? `${selectedEvent.title}` : 'Mission telemetry'}
-            </span>
+            <span>{selectedEvent ? `${selectedEvent.title}` : 'Mission telemetry'}</span>
             <strong>
               Report {selectedEventPosition} • Packet loss {selectedEvent?.packetLoss ?? '0%'}
             </strong>
@@ -258,6 +319,9 @@ export function App() {
               <dt>Latency</dt>
               <dd>{telemetry.latency}</dd>
             </div>
+            <div className="scene-stat scene-stat--pressure">
+              <CabinPressureGauge cabinPressure={telemetry.cabinPressure} compact />
+            </div>
           </dl>
         </div>
       </section>
@@ -266,7 +330,10 @@ export function App() {
         <article className="mission-stat">
           <span>Visible reports</span>
           <strong>{visibleEvents.length}</strong>
-          <small>{severityCounts.critical} critical, {severityCounts.watch} watch, {severityCounts.stable} stable</small>
+          <small>
+            {severityCounts.critical} critical, {severityCounts.watch} watch, {severityCounts.stable}{' '}
+            stable
+          </small>
         </article>
         <article className="mission-stat">
           <span>Focus craft</span>
@@ -276,7 +343,9 @@ export function App() {
         <article className="mission-stat">
           <span>Current tempo</span>
           <strong>{selectedEvent?.timestamp ?? 'T+00:00'}</strong>
-          <small>{selectedEvent?.severity ? formatSeverity(selectedEvent.severity) : 'Waiting for selection'}</small>
+          <small>
+            {selectedEvent?.severity ? formatSeverity(selectedEvent.severity) : 'Waiting for selection'}
+          </small>
         </article>
         <article className="mission-stat mission-stat--export">
           <span>Replay gap</span>
@@ -397,6 +466,7 @@ export function App() {
             <div className="detail-grid">
               <p className="detail-lead">{selectedEvent.summary}</p>
               <p>{selectedEvent.nextStep}</p>
+              <CabinPressureGauge cabinPressure={selectedEvent.cabinPressure} />
               <dl>
                 <div>
                   <dt>Craft</dt>

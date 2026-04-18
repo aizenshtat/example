@@ -1,6 +1,12 @@
 export type CraftFilter = 'all' | 'astra-7' | 'lumen-3' | 'mira-2';
 export type WindowFilter = 'last-30' | 'last-6h' | 'europa-pass';
 export type MissionSeverity = 'critical' | 'watch' | 'stable';
+export type PressureSeverity = 'normal' | 'warning' | 'critical';
+
+export type CabinPressure = {
+  value: string | null;
+  severity: PressureSeverity | null;
+};
 
 export type MissionEvent = {
   id: string;
@@ -14,6 +20,7 @@ export type MissionEvent = {
   packetLoss: string;
   latency: string;
   timestamp: string;
+  cabinPressure: CabinPressure;
 };
 
 export type MissionTelemetry = {
@@ -21,6 +28,7 @@ export type MissionTelemetry = {
   battery: string;
   thermal: string;
   latency: string;
+  cabinPressure: CabinPressure;
 };
 
 export const telemetryProfiles: Record<CraftFilter, MissionTelemetry> = {
@@ -29,24 +37,40 @@ export const telemetryProfiles: Record<CraftFilter, MissionTelemetry> = {
     battery: '64%',
     thermal: '-18 C',
     latency: '690 ms',
+    cabinPressure: {
+      value: '14.2 psi',
+      severity: 'warning',
+    },
   },
   'astra-7': {
     signal: '42%',
     battery: '61%',
     thermal: '-28 C',
     latency: '940 ms',
+    cabinPressure: {
+      value: '11.8 psi',
+      severity: 'critical',
+    },
   },
   'lumen-3': {
     signal: '88%',
     battery: '73%',
     thermal: '-12 C',
     latency: '420 ms',
+    cabinPressure: {
+      value: '14.7 psi',
+      severity: 'normal',
+    },
   },
   'mira-2': {
     signal: '79%',
     battery: '58%',
     thermal: '-21 C',
     latency: '610 ms',
+    cabinPressure: {
+      value: null,
+      severity: null,
+    },
   },
 };
 
@@ -63,6 +87,10 @@ export const missionEvents: MissionEvent[] = [
     packetLoss: '18%',
     latency: '940 ms',
     timestamp: 'T+14:08',
+    cabinPressure: {
+      value: '11.8 psi',
+      severity: 'critical',
+    },
   },
   {
     id: 'thermal-drift-04',
@@ -76,6 +104,10 @@ export const missionEvents: MissionEvent[] = [
     packetLoss: '4%',
     latency: '680 ms',
     timestamp: 'T+10:42',
+    cabinPressure: {
+      value: '14.1 psi',
+      severity: 'warning',
+    },
   },
   {
     id: 'battery-recovery-12',
@@ -89,6 +121,10 @@ export const missionEvents: MissionEvent[] = [
     packetLoss: '1%',
     latency: '410 ms',
     timestamp: 'T+07:19',
+    cabinPressure: {
+      value: '14.7 psi',
+      severity: 'normal',
+    },
   },
   {
     id: 'relay-handshake-09',
@@ -102,6 +138,10 @@ export const missionEvents: MissionEvent[] = [
     packetLoss: '6%',
     latency: '630 ms',
     timestamp: 'T+03:51',
+    cabinPressure: {
+      value: null,
+      severity: null,
+    },
   },
   {
     id: 'payload-idle-22',
@@ -115,5 +155,9 @@ export const missionEvents: MissionEvent[] = [
     packetLoss: '2%',
     latency: '440 ms',
     timestamp: 'T+01:27',
+    cabinPressure: {
+      value: '14.9 psi',
+      severity: 'normal',
+    },
   },
 ];

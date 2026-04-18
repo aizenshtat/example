@@ -433,6 +433,94 @@ h2 {
   line-height: 1.15;
 }
 
+.scene-stat--pressure {
+  min-height: 92px;
+}
+
+.pressure-gauge {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  min-height: 84px;
+  padding: 12px;
+}
+
+.pressure-gauge--compact {
+  background: transparent;
+  border: 0;
+  gap: 8px;
+  min-height: 0;
+  padding: 0;
+}
+
+.pressure-gauge__dial {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.pressure-gauge__fill {
+  background: linear-gradient(90deg, currentColor 0%, rgba(255, 255, 255, 0.88) 100%);
+  border-radius: inherit;
+  height: 100%;
+  transform-origin: left center;
+}
+
+.pressure-gauge__copy {
+  display: grid;
+  gap: 2px;
+}
+
+.pressure-gauge__label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.pressure-gauge strong {
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.pressure-gauge small {
+  color: currentColor;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.pressure-gauge--compact .pressure-gauge strong {
+  font-size: 18px;
+}
+
+.pressure-gauge--normal {
+  color: var(--good);
+}
+
+.pressure-gauge--warning {
+  color: var(--warm);
+}
+
+.pressure-gauge--critical {
+  color: var(--accent);
+}
+
+.pressure-gauge--disabled {
+  color: var(--muted);
+}
+
+.pressure-gauge--disabled .pressure-gauge__dial {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.pressure-gauge--disabled .pressure-gauge__fill {
+  background: rgba(255, 255, 255, 0.16);
+}
+
 .mission-strip {
   display: grid;
   gap: 10px;
@@ -844,7 +932,7 @@ dd {
   }
 
   .scene-footer {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .mission-strip {

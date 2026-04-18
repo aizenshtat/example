@@ -35,6 +35,23 @@ test('App opens Crowdship with safe context for the anomaly-replay request', () 
   assert.match(app, /__EXAMPLE_CROWDSHIP_CONTEXT__/);
 });
 
+test('mission telemetry includes cabin pressure gauge in scene and detail surfaces', () => {
+  const app = read('src/App.tsx');
+  const data = read('src/data.ts');
+  const styles = read('src/styles.css');
+
+  assert.match(app, /CabinPressureGauge cabinPressure=\{telemetry\.cabinPressure\} compact/);
+  assert.match(app, /CabinPressureGauge cabinPressure=\{selectedEvent\.cabinPressure\}/);
+  assert.match(app, /Cabin pressure/);
+  assert.match(app, /No data/);
+  assert.match(data, /type PressureSeverity = 'normal' \| 'warning' \| 'critical'/);
+  assert.match(data, /value: null/);
+  assert.match(styles, /pressure-gauge--normal/);
+  assert.match(styles, /pressure-gauge--warning/);
+  assert.match(styles, /pressure-gauge--critical/);
+  assert.match(styles, /pressure-gauge--disabled/);
+});
+
 test('App rejects legacy report and demo-board copy', () => {
   const app = read('src/App.tsx');
   const styles = read('src/styles.css');
