@@ -63,6 +63,14 @@ function formatSeverity(severity: MissionSeverity) {
   return severityLabels[severity];
 }
 
+function countSeverities() {
+  return {
+    critical: 0,
+    stable: 0,
+    watch: 0,
+  } satisfies Record<MissionSeverity, number>;
+}
+
 export function App() {
   const [craft, setCraft] = useState<CraftFilter>('all');
   const [windowFilter, setWindowFilter] = useState<WindowFilter>('last-30');
@@ -82,13 +90,30 @@ export function App() {
   const selectedEvent =
     visibleEvents.find((event) => event.id === selectedEventId) ?? visibleEvents[0] ?? null;
 
+  const selectedEventIndex = selectedEvent
+    ? visibleEvents.findIndex((event) => event.id === selectedEvent.id)
+    : -1;
+  const selectedEventPosition =
+    selectedEventIndex >= 0 ? `${selectedEventIndex + 1}/${visibleEvents.length}` : '0/0';
+
+  const severityCounts = useMemo(() => {
+    const totals = countSeverities();
+
+    for (const event of visibleEvents) {
+      totals[event.severity] += 1;
+    }
+
+    return totals;
+  }, [visibleEvents]);
+
+  const telemetryCraft = craft === 'all' && selectedEvent ? selectedEvent.craft : craft;
+  const telemetry = telemetryProfiles[telemetryCraft];
+  const telemetryCraftLabel = telemetryCraft === 'all' ? 'All craft' : formatCraft(telemetryCraft);
+
   const crowdshipContext = useMemo(
     () => buildContext(craft, windowFilter, selectedEvent?.id ?? null),
     [craft, selectedEvent?.id, windowFilter],
   );
-
-  const telemetryCraft = craft === 'all' && selectedEvent ? selectedEvent.craft : craft;
-  const telemetry = telemetryProfiles[telemetryCraft];
 
   useEffect(() => {
     if (selectedEvent && selectedEvent.id !== selectedEventId) {
@@ -157,37 +182,50 @@ export function App() {
             <small>Mission telemetry</small>
           </span>
         </a>
-        <span className={`widget-status widget-status--${crowdshipStatus}`} aria-live="polite">
-          {crowdshipStatus === 'ready'
-            ? 'Crowdship ready'
-            : crowdshipStatus === 'unavailable'
-              ? 'Crowdship unavailable'
-              : 'Crowdship loading'}
-        </span>
+        <div className="topbar-cluster">
+          <span className={`widget-status widget-status--${crowdshipStatus}`} aria-live="polite">
+            {crowdshipStatus === 'ready'
+              ? 'Crowdship ready'
+              : crowdshipStatus === 'unavailable'
+                ? 'Crowdship unavailable'
+                : 'Crowdship loading'}
+          </span>
+          <span className="route-chip route-chip--soft">Route /mission</span>
+        </div>
       </header>
 
       <section className="mission-band" aria-labelledby="mission-title">
         <div className="mission-copy">
-          <p className="eyebrow">Live pass</p>
-          <h1 id="mission-title">Astra-7 is inside a noisy relay window.</h1>
+          <p className="eyebrow">Flight deck</p>
+          <h1 id="mission-title">Astra-7 is threading a relay shadow with a tight hand on the throttle.</h1>
           <p className="intro">
-            Watch signal loss, thermal drift, and battery recovery before the next command uplink.
+            Watch the live pass, compare the filtered reports, and keep the debrief pack clean
+            before the next burn opens.
           </p>
           <div className="context-row">
             <span className="route-chip">Route /mission</span>
+            <span className="route-chip route-chip--soft">Craft {telemetryCraftLabel}</span>
+            <span className="route-chip route-chip--soft">Window {windowLabels[windowFilter]}</span>
             <span className="route-chip route-chip--soft">
-              Selected {selectedEvent?.title ?? 'none'}
+              Report {selectedEventPosition === '0/0' ? '0/0' : selectedEventPosition}
             </span>
           </div>
+          <p className="mission-note">
+            The current window needs a filtered export for the review room.
+          </p>
         </div>
 
         <div className="space-scene" aria-label="Current telemetry">
           <div className="star-layer star-layer--near" aria-hidden="true" />
           <div className="star-layer star-layer--far" aria-hidden="true" />
-          <div className="planet-arc" aria-hidden="true" />
-          <div className="relay-line" aria-hidden="true" />
-          <span className="signal-ping signal-ping--one" aria-hidden="true" />
-          <span className="signal-ping signal-ping--two" aria-hidden="true" />
+          <div className="scene-halo" aria-hidden="true" />
+          <div className="scene-orbit scene-orbit--outer" aria-hidden="true" />
+          <div className="scene-orbit scene-orbit--inner" aria-hidden="true" />
+          <div className="scene-path" aria-hidden="true" />
+          <div className="scene-wave scene-wave--one" aria-hidden="true" />
+          <div className="scene-wave scene-wave--two" aria-hidden="true" />
+          <div className="scene-gridline scene-gridline--vertical" aria-hidden="true" />
+          <div className="scene-gridline scene-gridline--horizontal" aria-hidden="true" />
           <img
             className="orbiter-art"
             src="./assets/orbiter.png"
@@ -196,23 +234,27 @@ export function App() {
             height="160"
           />
           <div className="scene-hud">
-            <span>Europa relay</span>
-            <strong>Packet loss {selectedEvent?.packetLoss ?? '0%'}</strong>
+            <span>
+              {selectedEvent ? `${selectedEvent.title}` : 'Mission telemetry'}
+            </span>
+            <strong>
+              Report {selectedEventPosition} • Packet loss {selectedEvent?.packetLoss ?? '0%'}
+            </strong>
           </div>
-          <dl className="telemetry-grid">
-            <div>
+          <dl className="scene-footer">
+            <div className="scene-stat">
               <dt>Signal</dt>
               <dd>{telemetry.signal}</dd>
             </div>
-            <div>
+            <div className="scene-stat">
               <dt>Battery</dt>
               <dd>{telemetry.battery}</dd>
             </div>
-            <div>
+            <div className="scene-stat">
               <dt>Thermal</dt>
               <dd>{telemetry.thermal}</dd>
             </div>
-            <div>
+            <div className="scene-stat">
               <dt>Latency</dt>
               <dd>{telemetry.latency}</dd>
             </div>
@@ -220,12 +262,35 @@ export function App() {
         </div>
       </section>
 
+      <section className="mission-strip" aria-label="Mission summary">
+        <article className="mission-stat">
+          <span>Visible reports</span>
+          <strong>{visibleEvents.length}</strong>
+          <small>{severityCounts.critical} critical, {severityCounts.watch} watch, {severityCounts.stable} stable</small>
+        </article>
+        <article className="mission-stat">
+          <span>Focus craft</span>
+          <strong>{telemetryCraftLabel}</strong>
+          <small>Window {windowLabels[windowFilter]}</small>
+        </article>
+        <article className="mission-stat">
+          <span>Current tempo</span>
+          <strong>{selectedEvent?.timestamp ?? 'T+00:00'}</strong>
+          <small>{selectedEvent?.severity ? formatSeverity(selectedEvent.severity) : 'Waiting for selection'}</small>
+        </article>
+        <article className="mission-stat mission-stat--export">
+          <span>Handoff pack</span>
+          <strong>Filtered export</strong>
+          <small>{selectedEvent?.nextStep ?? 'Pick a report to inspect the next maneuver.'}</small>
+        </article>
+      </section>
+
       <section className="request-strip" aria-labelledby="request-title">
         <div>
           <p className="eyebrow">Contribution opportunity</p>
-          <h2 id="request-title">Signal drops need replay.</h2>
+          <h2 id="request-title">Filtered reports need a clean export.</h2>
           <p className="intro">
-            The team can see the spike, but not the telemetry frames that led into it.
+            The team can see the spike, but it still needs a tidy handoff for the review room.
           </p>
         </div>
         <button
@@ -234,7 +299,7 @@ export function App() {
           onClick={openCrowdshipRequest}
           disabled={crowdshipStatus !== 'ready'}
         >
-          Suggest replay mode
+          Request export
         </button>
       </section>
 
@@ -268,10 +333,10 @@ export function App() {
         <section className="event-band" aria-labelledby="event-title">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">Anomalies</p>
+              <p className="eyebrow">Mission reports</p>
               <h2 id="event-title">Relay watchlist</h2>
             </div>
-            <div className="context-chip" aria-label="Visible anomaly count">
+            <div className="context-chip" aria-label="Visible report count">
               {visibleEvents.length} visible
             </div>
           </div>
@@ -292,13 +357,19 @@ export function App() {
                     aria-pressed={isSelected}
                   >
                     <div className="event-row__main">
+                      <span className="event-row__eyebrow">
+                        {formatCraft(event.craft)} / {windowLabels[event.window]}
+                      </span>
                       <strong>{event.title}</strong>
                       <span>{event.summary}</span>
                     </div>
                     <div className="event-row__meta">
-                      <span>{formatCraft(event.craft)}</span>
-                      <span>{formatSeverity(event.severity)}</span>
-                      <span>{event.timestamp}</span>
+                      <span className="event-row__tag event-row__tag--severity">
+                        {formatSeverity(event.severity)}
+                      </span>
+                      <span className="event-row__tag">Packet {event.packetLoss}</span>
+                      <span className="event-row__tag">Latency {event.latency}</span>
+                      <span className="event-row__tag event-row__tag--time">{event.timestamp}</span>
                     </div>
                   </button>
                 );
@@ -306,7 +377,7 @@ export function App() {
             </div>
           ) : (
             <div className="empty-state">
-              <strong>No anomalies in this window</strong>
+              <strong>No reports in this window</strong>
               <span>Change the craft or time window to load another pass.</span>
             </div>
           )}
@@ -315,13 +386,14 @@ export function App() {
         <section className="detail-band" aria-labelledby="detail-title">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">Selected anomaly</p>
+              <p className="eyebrow">Selected report</p>
               <h2 id="detail-title">{selectedEvent?.title ?? 'Nothing selected'}</h2>
             </div>
           </div>
 
           {selectedEvent ? (
             <div className="detail-grid">
+              <p className="detail-lead">{selectedEvent.summary}</p>
               <p>{selectedEvent.nextStep}</p>
               <dl>
                 <div>
@@ -344,8 +416,8 @@ export function App() {
             </div>
           ) : (
             <div className="empty-state">
-              <strong>No anomaly selected</strong>
-              <span>Pick an anomaly to inspect the latest telemetry.</span>
+              <strong>No report selected</strong>
+              <span>Pick a report to inspect the latest telemetry.</span>
             </div>
           )}
         </section>
