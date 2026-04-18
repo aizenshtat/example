@@ -22,9 +22,28 @@ test('quality infrastructure files exist', () => {
     '.githooks/pre-commit',
     '.github/workflows/smoke.yml',
     'docs/agent-tooling.md',
+    'docs/implementation-plan.md',
     'docs/ui-quality-contract.md',
+    'index.html',
+    'public/manifest.webmanifest',
+    'public/sw.js',
     'scripts/quality-check.sh',
+    'src/App.tsx',
+    'src/main.tsx',
+    'vite.config.ts',
   ].forEach(assertFile);
+});
+
+test('implementation plan references required contracts', () => {
+  const plan = read('docs/implementation-plan.md');
+
+  assert.match(plan, /Vite/);
+  assert.match(plan, /React/);
+  assert.match(plan, /TypeScript/);
+  assert.match(plan, /docs\/external-app-role\.md/);
+  assert.match(plan, /docs\/widget-install-contract\.md/);
+  assert.match(plan, /docs\/sentry\.md/);
+  assert.match(plan, /\.\.\/crowdship\/docs\/widget-contract\.md/);
 });
 
 test('example app ui contract protects the integration boundary', () => {
@@ -57,9 +76,24 @@ test('package scripts expose local quality commands', () => {
   const pkg = JSON.parse(read('package.json'));
 
   assert.equal(pkg.private, true);
+  assert.equal(pkg.scripts.build, 'tsc --noEmit && vite build');
   assert.equal(pkg.scripts.quality, 'bash scripts/quality-check.sh');
   assert.equal(pkg.scripts.test, 'node --test tests/*.test.mjs');
-  assert.equal(pkg.scripts.lint, 'bash -n scripts/*.sh .githooks/pre-commit');
+  assert.equal(pkg.scripts.typecheck, 'tsc --noEmit');
+  assert.equal(pkg.scripts.lint, 'tsc --noEmit && bash -n scripts/*.sh .githooks/pre-commit');
+});
+
+test('reference app implements reports and pwa foundation', () => {
+  const app = read('src/App.tsx');
+  const manifest = JSON.parse(read('public/manifest.webmanifest'));
+  const sw = read('public/sw.js');
+
+  assert.match(app, /Weekly customer performance review/);
+  assert.match(app, /CSV export is not available yet/);
+  assert.match(app, /__EXAMPLE_CROWDSHIP_CONTEXT__/);
+  assert.equal(manifest.display, 'standalone');
+  assert.equal(manifest.icons.length, 2);
+  assert.match(sw, /CACHE_NAME/);
 });
 
 test('sentry is documented as core team merge evidence', () => {

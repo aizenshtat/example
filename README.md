@@ -4,12 +4,14 @@ Bootstrap infrastructure for a realistic external app that validates Crowdship f
 
 ## Current State
 
-This repository intentionally contains only bootstrap infrastructure:
+This repository now contains the first reference app slice:
 
-- Static public placeholder at `public/`
+- Vite/React/TypeScript reports app at `src/`
+- PWA manifest, icons, and service worker in `public/`
 - Nginx host template at `infra/nginx/`
 - Local deploy helper at `scripts/deploy-static.sh`
 - External app role at `docs/external-app-role.md`
+- Implementation plan at `docs/implementation-plan.md`
 - Admin setup at `docs/admin-setup.md`
 - Widget install contract at `docs/widget-install-contract.md`
 - Preview CI/CD contract at `docs/preview-cicd.md`
@@ -17,9 +19,9 @@ This repository intentionally contains only bootstrap infrastructure:
 - GitHub Actions configuration at `docs/github-configuration.md`
 - Agent tooling at `docs/agent-tooling.md`
 - UI quality contract at `docs/ui-quality-contract.md`
-- Framework-neutral quality CI, tests, linting, and pre-commit guardrails
+- Quality CI, tests, typechecking, build checks, linting, and pre-commit guardrails
 
-Product implementation has not started yet.
+The current product slice is a mobile-first reports workflow with safe Crowdship context prepared for the future widget.
 
 ## Quality Checks
 
@@ -51,4 +53,4 @@ On the server:
 sudo ./scripts/deploy-static.sh
 ```
 
-The script publishes `public/` to `/var/www/example.aizenshtat.eu/html`.
+The script builds the app and publishes `dist/` to `/var/www/example.aizenshtat.eu/html`.
