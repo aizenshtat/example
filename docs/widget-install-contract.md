@@ -4,6 +4,8 @@
 
 The example app should install Crowdship the same way a real external app would: by loading a public script and passing safe metadata.
 
+The widget owns all contribution UI. The example app should not implement request chat, voting, or progress UI itself.
+
 ## Contract
 
 ```html
@@ -32,8 +34,26 @@ The host app decides which identity fields to share.
 ```js
 window.Crowdship.setContext({
   route: window.location.pathname,
-  appVersion: "2026.04.18"
+  appVersion: "2026.04.18",
+  selectedObjectType: "report",
+  selectedObjectId: "report-demo-7",
+  activeFilters: {
+    segment: "enterprise",
+    period: "last-30-days"
+  }
 });
 ```
 
 The host app is responsible for keeping this context safe and intentional.
+
+## Widget Events
+
+The example app may listen to widget lifecycle events for analytics or UX:
+
+```js
+window.addEventListener("crowdship:event", (event) => {
+  console.log(event.detail.type, event.detail.contributionId);
+});
+```
+
+The example app must not use these events to bypass Crowdship approval or voting states.

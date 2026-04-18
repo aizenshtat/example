@@ -16,3 +16,6 @@ jobs:
           test -f infra/nginx/example.aizenshtat.eu.conf
           grep -q "example.aizenshtat.eu" README.md
           grep -q "Product implementation has not started yet" README.md
+          grep -q "Preview CI/CD" docs/preview-cicd.md
+          grep -q "Admin Responsibilities" docs/admin-setup.md
+          grep -q "Required Real Artifacts" docs/external-app-role.md

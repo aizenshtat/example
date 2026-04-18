@@ -10,7 +10,9 @@ This repository intentionally contains only bootstrap infrastructure:
 - Nginx host template at `infra/nginx/`
 - Local deploy helper at `scripts/deploy-static.sh`
 - External app role at `docs/external-app-role.md`
+- Admin setup at `docs/admin-setup.md`
 - Widget install contract at `docs/widget-install-contract.md`
+- Preview CI/CD contract at `docs/preview-cicd.md`
 - Sentry project notes at `docs/sentry.md`
 - GitHub Actions configuration at `docs/github-configuration.md`
 - Smoke CI that validates the static placeholder and deployment files
