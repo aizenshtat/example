@@ -12,6 +12,7 @@ This repository intentionally contains only bootstrap infrastructure:
 - External app role at `docs/external-app-role.md`
 - Widget install contract at `docs/widget-install-contract.md`
 - Sentry project notes at `docs/sentry.md`
+- GitHub Actions configuration at `docs/github-configuration.md`
 - Smoke CI that validates the static placeholder and deployment files
 
 Product implementation has not started yet.
