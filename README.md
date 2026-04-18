@@ -6,7 +6,7 @@ Bootstrap infrastructure for a realistic external app that validates Crowdship f
 
 This repository now contains the first reference app slice:
 
-- Vite/React/TypeScript reports app at `src/`
+- Vite/React/TypeScript Orbital Ops app at `src/`
 - PWA manifest, icons, and service worker in `public/`
 - Nginx host template at `infra/nginx/`
 - Local deploy helper at `scripts/deploy-static.sh`
@@ -21,7 +21,7 @@ This repository now contains the first reference app slice:
 - UI quality contract at `docs/ui-quality-contract.md`
 - Quality CI, tests, typechecking, build checks, linting, and pre-commit guardrails
 
-The current product slice is a mobile-first reports workflow with safe Crowdship context prepared for the future widget.
+The current product slice is a mobile-first mission-control workflow with safe Crowdship context prepared for the widget.
 
 ## Quality Checks
 

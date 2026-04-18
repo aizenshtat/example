@@ -10,16 +10,17 @@ All integration behavior should be real. The example repo should receive real Cr
 
 ## Reference Product
 
-The app should feel like a small SaaS product with real users and a few obvious missing workflows.
+The app should feel like a high-energy mission-control telemetry product an operations team could actually use.
 
-Suggested shape:
+Current shape:
 
-- A reports or dashboard page.
-- A table with filters.
-- A missing export workflow.
-- A place where users naturally want to ask for improvements.
+- A live animated telemetry console for launch and operations teams.
+- A focused list of signals with mission and severity filters.
+- A selected anomaly users care about.
+- A concrete missing workflow that invites useful product suggestions.
+- A visual spacecraft/relay scene that makes the product memorable during presentations.
 
-The canonical first feature is "Export filtered reports as CSV." This is narrow enough for an implementation agent but concrete enough for users to test.
+The canonical first feature is "Add anomaly replay for signal drops." This is narrow enough for an implementation agent but still specific enough for operations users to validate.
 
 ## Future Widget Install
 
@@ -29,6 +30,7 @@ The canonical first feature is "Export filtered reports as CSV." This is narrow 
   src="https://crowdship.aizenshtat.eu/widget/v1.js"
   data-crowdship-project="example"
   data-crowdship-environment="production"
+  data-crowdship-launcher="manual"
   data-crowdship-user-id="customer-123"
   data-crowdship-user-email="customer@example.com"
   data-crowdship-user-role="customer"
@@ -41,13 +43,13 @@ The example app may pass this context to Crowdship:
 
 ```js
 window.Crowdship.setContext({
-  route: "/reports",
+  route: "/mission",
   appVersion: "2026.04.18",
-  selectedObjectType: "report",
-  selectedObjectId: "report-7",
+  selectedObjectType: "anomaly",
+  selectedObjectId: "signal-drop-17",
   activeFilters: {
-    segment: "enterprise",
-    period: "last-30-days"
+    craft: "all",
+    window: "last-30"
   }
 });
 ```
@@ -65,10 +67,10 @@ The example app must not pass:
 The canonical first request is:
 
 ```text
-Export filtered reports as CSV.
+Add anomaly replay for signal drops.
 ```
 
-The user submits this from the reports page. Crowdship receives the request with safe route and filter context, then turns it into structured product intent for the owner.
+The user submits this from the mission view. Crowdship receives the request with safe route, selected anomaly, and filter context, then turns it into structured product intent for the owner.
 
 ## Required Real Artifacts
 

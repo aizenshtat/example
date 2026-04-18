@@ -8,10 +8,11 @@ The app owns its product workflow. Crowdship owns contribution UI.
 
 The example app should include real product context:
 
-- a dashboard or reports workflow
+- a mission-control telemetry workflow
 - filters or controls with visible state
-- a table or artifact users care about
+- a selected anomaly users care about
 - a concrete missing feature
+- a presentation-ready animated spacecraft/relay scene
 - a single Crowdship widget entry point
 
 The example app must not duplicate:
@@ -31,7 +32,7 @@ Do not show fake implementation progress, fake pull requests, fake preview links
 - Widget launch must be visible but not intrusive.
 - Users should understand what screen or object their contribution is about.
 - Context passed to Crowdship must be safe and intentional.
-- Long report names, table values, filters, and empty states must not break layout.
+- Long anomaly names, signal IDs, filters, and empty states must not break layout.
 - Keyboard access is mandatory for product controls and widget launch.
 - Admin-facing instructions must be plain enough that another app owner could repeat the integration.
 
@@ -41,13 +42,13 @@ The reference app should prove that Crowdship works inside a real mobile product
 
 Mobile-first requirements:
 
-- Design the reports workflow at 390x844 before expanding to desktop.
-- Keep filters, report rows, export-related controls, and the Crowdship widget reachable with one hand.
+- Design the mission console workflow at 390x844 before expanding to desktop.
+- Keep filters, anomaly rows, contribution controls, and the Crowdship widget reachable with one hand.
 - Use stacked cards or compact rows on mobile instead of desktop-only tables.
 - Keep the widget launcher visible without covering the app's primary actions.
 - Use at least 44px touch targets for filters, table actions, widget launch, and preview links.
 - Avoid hover-only controls.
-- Keep long report names, empty states, and filter summaries readable without horizontal scrolling.
+- Keep long signal names, empty states, and filter summaries readable without horizontal scrolling.
 - Preserve safe page context when the user opens the widget, switches tabs, opens a preview, or returns to the app.
 
 PWA direction:
@@ -65,6 +66,8 @@ Do not make the example app dependent on desktop-only review workflows.
 
 - Build the usable app first, not a marketing homepage.
 - Keep the product shell distinct from the Crowdship widget.
+- Prefer aerospace contrast, motion, and real product state over static dashboard panels.
+- Use visual assets and purposeful animation for the mission scene, while respecting reduced-motion preferences.
 - Avoid decorative gradients, blobs, dark slate dashboards, beige themes, and nested cards.
 - Use stable dimensions for tables, filters, empty states, and widget launcher.
 - Use restrained accent color so the Crowdship entry point is findable without dominating the app.

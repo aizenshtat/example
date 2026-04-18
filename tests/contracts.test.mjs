@@ -22,6 +22,7 @@ test('quality infrastructure files exist', () => {
     '.githooks/pre-commit',
     '.github/workflows/smoke.yml',
     'docs/agent-tooling.md',
+    'docs/external-app-role.md',
     'docs/implementation-plan.md',
     'docs/ui-quality-contract.md',
     'index.html',
@@ -83,17 +84,25 @@ test('package scripts expose local quality commands', () => {
   assert.equal(pkg.scripts.lint, 'tsc --noEmit && bash -n scripts/*.sh .githooks/pre-commit');
 });
 
-test('reference app implements reports and pwa foundation', () => {
+test('reference app implements orbital ops and pwa foundation', () => {
   const app = read('src/App.tsx');
   const manifest = JSON.parse(read('public/manifest.webmanifest'));
   const sw = read('public/sw.js');
+  const html = read('index.html');
 
-  assert.match(app, /Weekly customer performance review/);
-  assert.match(app, /CSV export is not available yet/);
+  assert.match(app, /Orbital Ops/);
+  assert.match(app, /Add anomaly replay for signal drops/);
+  assert.match(app, /Route \/mission/);
+  assert.match(app, /selectedObjectType:\s*'anomaly'/);
+  assert.match(app, /signal-drop-17/);
   assert.match(app, /__EXAMPLE_CROWDSHIP_CONTEXT__/);
+  assert.equal(manifest.name, 'Orbital Ops');
+  assert.equal(manifest.short_name, 'Orbital');
+  assert.match(manifest.description, /mission-control telemetry/i);
   assert.equal(manifest.display, 'standalone');
   assert.equal(manifest.icons.length, 2);
   assert.match(sw, /CACHE_NAME/);
+  assert.match(html, /<title>Orbital Ops<\/title>/);
 });
 
 test('sentry is documented as core team merge evidence', () => {

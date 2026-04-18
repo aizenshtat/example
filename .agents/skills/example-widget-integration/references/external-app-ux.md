@@ -2,20 +2,21 @@
 
 ## Product Shape
 
-The example app should feel like a small SaaS product with a reports/dashboard workflow.
+The example app should feel like a small mission-control product with enough motion and visual energy to hold a presentation room.
 
 The canonical missing feature:
 
 ```text
-Export filtered reports as CSV.
+Add anomaly replay for signal drops.
 ```
 
 The page should include:
 
-- report table
-- filters
+- anomaly watchlist
+- craft and window filters
 - visible current route/context
-- a reason users would need export
+- a reason operators need replay
+- animated spacecraft or relay visual asset tied to the current anomaly
 - Crowdship widget launcher
 
 Avoid a marketing homepage. The first screen should be the usable app.
@@ -25,7 +26,7 @@ Avoid a marketing homepage. The first screen should be the usable app.
 The reference app must work well from a phone.
 
 - Start layouts at 390x844 before desktop.
-- Keep filters and report actions touch-friendly.
+- Keep filters and mission actions touch-friendly.
 - Replace desktop-only tables with stacked mobile rows or cards.
 - Keep the Crowdship launcher visible without covering host-app actions.
 - Use at least 44px touch targets.

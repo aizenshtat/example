@@ -1,12 +1,12 @@
 {
-  "name": "Example Reports",
-  "short_name": "Reports",
-  "description": "Reference reports app for Crowdship contribution workflows.",
+  "name": "Orbital Ops",
+  "short_name": "Orbital",
+  "description": "Mission-control telemetry for relay windows, craft health, and anomaly response.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f7f8f5",
-  "theme_color": "#f7f8f5",
+  "background_color": "#fbfbfc",
+  "theme_color": "#fbfbfc",
   "icons": [
     {
       "src": "/icons/icon-192.png",

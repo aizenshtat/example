@@ -33,14 +33,15 @@ For the broader product loop, also read:
 - `../crowdship/docs/contribution-lifecycle.md`
 - `../crowdship/docs/preview-cicd.md`
 
-## Phase 1: Reports Product Shell
+## Phase 1: Mission Console Product Shell
 
-Goal: replace the placeholder with a usable mobile-first reports app.
+Goal: replace the placeholder with a usable mobile-first mission-control telemetry app.
 
 Deliverables:
 
-- Reports page with realistic metrics, filters, and table rows.
-- Clear missing export workflow: users can see why "Export filtered reports as CSV" matters.
+- Mission console with animated telemetry, mission filters, and selected anomaly state.
+- Spacecraft/relay visual asset and purposeful motion for presentation walkthroughs.
+- Clear missing replay workflow: users can see why "Add anomaly replay for signal drops" matters.
 - Crowdship widget launcher placement reserved but not faked.
 - Safe context object prepared for Crowdship.
 - Mobile-first layout at 390x844.
@@ -68,7 +69,7 @@ Deliverables:
 - Script integration.
 - Safe runtime context.
 - No source code, tokens, cookies, private records, full API responses, or raw stack traces passed to Crowdship.
-- Mobile launcher behavior verified.
+- Manual launcher behavior verified.
 
 ## Phase 4: Preview CI/CD
 
