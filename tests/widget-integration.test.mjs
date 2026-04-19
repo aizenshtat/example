@@ -54,6 +54,33 @@ test('App renders anomaly pressure replay only for relevant selected anomalies',
   assert.match(styles, /pressure-chart/);
 });
 
+test('App keeps mission alerts permission behind explicit user action with Phase 2 states', () => {
+  const app = read('src/App.tsx');
+  const styles = read('src/styles.css');
+  const permissionCalls = app.match(/Notification\.requestPermission\(\)/g) ?? [];
+
+  assert.match(app, /Mission alerts wait for your say-so/);
+  assert.match(app, /handleNotificationEntryPoint/);
+  assert.equal(permissionCalls.length, 1);
+  assert.match(app, /async function handleNotificationEntryPoint\(\) \{[\s\S]*Notification\.requestPermission\(\)/);
+  assert.match(app, /onClick=\{handleNotificationEntryPoint\}/);
+  assert.match(app, /No prompts until you turn them on\./);
+  assert.match(app, /Preview ready/);
+  assert.match(app, /Request needs review/);
+  assert.match(app, /Feature shipped/);
+  assert.match(app, /Admin action needed/);
+  assert.match(app, /'ready'/);
+  assert.match(app, /'enabled'/);
+  assert.match(app, /'blocked'/);
+  assert.match(app, /'homescreen-required'/);
+  assert.match(app, /'unsupported'/);
+  assert.match(app, /'error'/);
+  assert.match(app, /Home Screen required/);
+  assert.match(styles, /notification-strip/);
+  assert.match(styles, /alert-status/);
+  assert.match(styles, /alert-moment/);
+});
+
 test('App rejects legacy report and demo-board copy', () => {
   const app = read('src/App.tsx');
   const styles = read('src/styles.css');

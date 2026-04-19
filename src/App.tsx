@@ -38,6 +38,13 @@ const CROWDSHIP_REQUEST = {
   type: 'feature_request' as const,
 };
 
+const alertMoments = [
+  'Preview ready',
+  'Request needs review',
+  'Feature shipped',
+  'Admin action needed',
+] as const;
+
 type CrowdshipContext = {
   activeFilters: {
     craft: CraftFilter;
@@ -98,12 +105,134 @@ function buildPressurePath(points: PressureReplayPoint[]) {
     .join(' ');
 }
 
+type NotificationEntryState =
+  | 'ready'
+  | 'requesting'
+  | 'enabled'
+  | 'blocked'
+  | 'homescreen-required'
+  | 'unsupported'
+  | 'error';
+
+type NotificationPanel = {
+  actionDisabled: boolean;
+  actionLabel: string;
+  detail: string;
+  statusLabel: string;
+  tone: 'good' | 'neutral' | 'warn' | 'bad';
+};
+
+function isStandaloneDisplayMode() {
+  const navigatorWithStandalone = navigator as Navigator & { standalone?: boolean };
+  return (
+    (typeof window.matchMedia === 'function' &&
+      window.matchMedia('(display-mode: standalone)').matches) ||
+    navigatorWithStandalone.standalone === true
+  );
+}
+
+function isAppleMobileDevice() {
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  );
+}
+
+function getNotificationEntryState(): NotificationEntryState {
+  if (
+    !window.isSecureContext ||
+    !('Notification' in window) ||
+    !('serviceWorker' in navigator)
+  ) {
+    return 'unsupported';
+  }
+
+  if (Notification.permission === 'granted') {
+    return 'enabled';
+  }
+
+  if (Notification.permission === 'denied') {
+    return 'blocked';
+  }
+
+  if (isAppleMobileDevice() && !isStandaloneDisplayMode()) {
+    return 'homescreen-required';
+  }
+
+  return 'ready';
+}
+
+function buildNotificationPanel(state: NotificationEntryState): NotificationPanel {
+  switch (state) {
+    case 'requesting':
+      return {
+        actionDisabled: true,
+        actionLabel: 'Requesting permission...',
+        detail: 'Choose whether this device should receive mission alerts.',
+        statusLabel: 'Waiting on your choice',
+        tone: 'neutral',
+      };
+    case 'enabled':
+      return {
+        actionDisabled: true,
+        actionLabel: 'Mission alerts on',
+        detail: 'This device can receive mission alerts for meaningful review moments.',
+        statusLabel: 'Alerts on',
+        tone: 'good',
+      };
+    case 'blocked':
+      return {
+        actionDisabled: true,
+        actionLabel: 'Alerts blocked in settings',
+        detail: 'Mission alerts are blocked in browser settings. Allow them there, then come back here.',
+        statusLabel: 'Alerts blocked',
+        tone: 'bad',
+      };
+    case 'homescreen-required':
+      return {
+        actionDisabled: true,
+        actionLabel: 'Add to Home Screen first',
+        detail: 'On iPhone and iPad, open Orbital Ops from the Home Screen before turning alerts on.',
+        statusLabel: 'Home Screen required',
+        tone: 'warn',
+      };
+    case 'unsupported':
+      return {
+        actionDisabled: true,
+        actionLabel: 'Alerts unavailable here',
+        detail: 'Use a secure browser with notification support to turn mission alerts on.',
+        statusLabel: 'Alerts unavailable',
+        tone: 'bad',
+      };
+    case 'error':
+      return {
+        actionDisabled: false,
+        actionLabel: 'Try again',
+        detail: 'Orbital Ops could not request alert permission. Try again from this screen.',
+        statusLabel: 'Try again',
+        tone: 'warn',
+      };
+    case 'ready':
+    default:
+      return {
+        actionDisabled: false,
+        actionLabel: 'Enable mission alerts',
+        detail: 'No prompts until you turn them on.',
+        statusLabel: 'Alerts off',
+        tone: 'neutral',
+      };
+  }
+}
+
 export function App() {
   const [craft, setCraft] = useState<CraftFilter>('all');
   const [windowFilter, setWindowFilter] = useState<WindowFilter>('last-30');
   const [selectedEventId, setSelectedEventId] = useState<string>('signal-drop-17');
   const [crowdshipStatus, setCrowdshipStatus] = useState<'loading' | 'ready' | 'unavailable'>(
     'loading',
+  );
+  const [notificationEntryState, setNotificationEntryState] = useState<NotificationEntryState>(
+    () => getNotificationEntryState(),
   );
 
   const visibleEvents = useMemo(() => {
@@ -152,6 +281,10 @@ export function App() {
   const pressureWindowLabel = pressureReplay
     ? Array.from(new Set(pressureReplay.map((point) => phaseLabels[point.phase]))).join(' • ')
     : null;
+  const notificationPanel = useMemo(
+    () => buildNotificationPanel(notificationEntryState),
+    [notificationEntryState],
+  );
 
   useEffect(() => {
     if (selectedEvent && selectedEvent.id !== selectedEventId) {
@@ -204,10 +337,63 @@ export function App() {
     };
   }, [crowdshipContext]);
 
+  useEffect(() => {
+    function syncNotificationEntryState() {
+      setNotificationEntryState((currentState) =>
+        currentState === 'requesting' ? currentState : getNotificationEntryState(),
+      );
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        syncNotificationEntryState();
+      }
+    }
+
+    syncNotificationEntryState();
+    window.addEventListener('focus', syncNotificationEntryState);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', syncNotificationEntryState);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   function openCrowdshipRequest() {
     window.__EXAMPLE_CROWDSHIP_CONTEXT__ = crowdshipContext;
     window.Crowdship?.setContext(crowdshipContext);
     window.Crowdship?.open(CROWDSHIP_REQUEST);
+  }
+
+  async function handleNotificationEntryPoint() {
+    const currentState = getNotificationEntryState();
+    setNotificationEntryState(currentState);
+
+    if (currentState !== 'ready') {
+      return;
+    }
+
+    setNotificationEntryState('requesting');
+
+    try {
+      const permission = await Notification.requestPermission();
+
+      if (permission === 'granted') {
+        setNotificationEntryState('enabled');
+        return;
+      }
+
+      if (permission === 'denied') {
+        setNotificationEntryState('blocked');
+        return;
+      }
+
+      setNotificationEntryState(getNotificationEntryState());
+    } catch (error: unknown) {
+      console.warn('Notification permission request failed', error);
+      setNotificationEntryState('error');
+    }
   }
 
   return (
@@ -343,6 +529,47 @@ export function App() {
         >
           Request replay mode
         </button>
+      </section>
+
+      <section className="notification-strip" aria-labelledby="notification-title">
+        <div className="notification-copy">
+          <div className="notification-heading">
+            <div>
+              <p className="eyebrow">Phone workflow</p>
+              <h2 id="notification-title">Mission alerts wait for your say-so.</h2>
+            </div>
+            <span
+              className={`alert-status alert-status--${notificationPanel.tone}`}
+              aria-live="polite"
+            >
+              {notificationPanel.statusLabel}
+            </span>
+          </div>
+          <p className="intro">
+            Orbital Ops only uses alerts for preview ready, request needs review, feature shipped,
+            and admin action needed.
+          </p>
+          <div className="alert-moments" role="list" aria-label="Mission alert moments">
+            {alertMoments.map((moment) => (
+              <span key={moment} className="alert-moment" role="listitem">
+                {moment}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="notification-actions">
+          <button
+            className="primary-button"
+            type="button"
+            onClick={handleNotificationEntryPoint}
+            disabled={notificationPanel.actionDisabled}
+          >
+            {notificationPanel.actionLabel}
+          </button>
+          <p className="notification-detail" aria-live="polite">
+            {notificationPanel.detail}
+          </p>
+        </div>
       </section>
 
       <section className="toolbar" aria-label="Mission filters">

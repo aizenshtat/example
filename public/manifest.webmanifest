@@ -1,12 +1,16 @@
 {
+  "id": "./",
+  "lang": "en-US",
   "name": "Orbital Ops",
   "short_name": "Orbital",
   "description": "Mission-control telemetry for relay windows, craft health, and anomaly response.",
   "start_url": "./mission",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#fbfbfc",
-  "theme_color": "#fbfbfc",
+  "orientation": "portrait",
+  "background_color": "#040608",
+  "theme_color": "#040608",
+  "categories": ["productivity", "utilities"],
   "icons": [
     {
       "src": "./icons/icon-192.png",

@@ -151,6 +151,12 @@ test('reference app implements orbital ops and pwa foundation', () => {
   assert.equal(manifest.short_name, 'Orbital');
   assert.match(manifest.description, /mission-control telemetry/i);
   assert.equal(manifest.display, 'standalone');
+  assert.equal(manifest.id, './');
+  assert.equal(manifest.lang, 'en-US');
+  assert.equal(manifest.orientation, 'portrait');
+  assert.equal(manifest.background_color, '#040608');
+  assert.equal(manifest.theme_color, '#040608');
+  assert.deepEqual(manifest.categories, ['productivity', 'utilities']);
   assert.equal(manifest.icons.length, 2);
   assert.match(sw, /CACHE_NAME/);
   assert.match(html, /<title>Orbital Ops<\/title>/);

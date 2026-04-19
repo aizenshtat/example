@@ -109,6 +109,7 @@ small {
 .mission-band,
 .mission-strip,
 .request-strip,
+.notification-strip,
 .toolbar,
 .ops-grid {
   margin: 0 auto;
@@ -497,6 +498,96 @@ h3 {
 .request-strip > div {
   display: grid;
   gap: 8px;
+}
+
+.notification-strip {
+  align-items: start;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 14px;
+  padding: 16px 0 18px;
+}
+
+.notification-copy,
+.notification-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.notification-heading {
+  align-items: start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.notification-heading > div {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.alert-status {
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 850;
+  min-height: 32px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.alert-status--neutral {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ink);
+}
+
+.alert-status--good {
+  background: var(--good-soft);
+  border-color: rgba(39, 224, 160, 0.36);
+  color: var(--good);
+}
+
+.alert-status--warn {
+  background: var(--warm-soft);
+  border-color: rgba(255, 200, 87, 0.36);
+  color: var(--warm);
+}
+
+.alert-status--bad {
+  background: var(--accent-soft);
+  border-color: rgba(255, 77, 109, 0.38);
+  color: #ff94a8;
+}
+
+.alert-moments {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.alert-moment {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 750;
+  min-height: 44px;
+  padding: 10px 12px;
+}
+
+.notification-detail {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 32ch;
 }
 
 .primary-button {
@@ -983,6 +1074,19 @@ dd {
   .request-strip {
     align-items: center;
     grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .notification-strip {
+    align-items: center;
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+  }
+
+  .notification-actions {
+    align-content: start;
+  }
+
+  .alert-moments {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .primary-button {
