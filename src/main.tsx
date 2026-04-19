@@ -2,9 +2,11 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { ensureCrowdshipScript } from './crowdship';
+import { initSentry } from './sentry';
 import './styles.css';
 
 ensureCrowdshipScript();
+initSentry();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

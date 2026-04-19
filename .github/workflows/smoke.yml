@@ -150,6 +150,13 @@ jobs:
           } >>"$GITHUB_OUTPUT"
       - name: Build preview bundle
         id: build_preview
+        env:
+          VITE_SENTRY_BRANCH: ${{ steps.meta.outputs.branch }}
+          VITE_SENTRY_CONTRIBUTION_ID: ${{ steps.meta.outputs.contribution_id }}
+          VITE_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          VITE_SENTRY_ENVIRONMENT: preview
+          VITE_SENTRY_PR_NUMBER: ${{ github.event.pull_request.number }}
+          VITE_SENTRY_RELEASE: ${{ steps.meta.outputs.release }}
         run: VITE_SOURCEMAP=true npm run build:preview
       - name: Create preview Sentry release
         id: sentry_preview
@@ -250,7 +257,7 @@ jobs:
           - Preview URL: ${preview_url_line}
           - Sentry release: ${sentry_release_line}
           - Filtered Sentry issues: ${{ steps.meta.outputs.sentry_issues_url }}
-          - New unhandled preview errors: unavailable until runtime Sentry tagging is wired into the app
+          - New unhandled preview errors: tracked at runtime; exercise the preview and use the filtered issues link
           - Failed preview sessions: unavailable until Session Replay is configured
           EOF
       - name: Update preview PR comment
@@ -304,7 +311,7 @@ jobs:
           ${preview_url_line}
           ${sentry_release_line}
           - Filtered Sentry issues: ${{ steps.meta.outputs.sentry_issues_url }}
-          - New unhandled preview errors: unavailable until runtime Sentry tagging is wired into the app
+          - New unhandled preview errors: tracked at runtime; exercise the preview and use the filtered issues link
           - Failed preview sessions: unavailable until Session Replay is configured
           EOF
 
@@ -412,6 +419,10 @@ jobs:
           fi
       - name: Build production bundle
         id: build_production
+        env:
+          VITE_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          VITE_SENTRY_ENVIRONMENT: production
+          VITE_SENTRY_RELEASE: ${{ steps.meta.outputs.release }}
         run: VITE_SOURCEMAP=true npm run build
       - name: Create production Sentry release
         id: sentry_production

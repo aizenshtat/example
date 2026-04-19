@@ -19,6 +19,20 @@
 https://641f730f8951ce8333f9732e9a3125bd@o4511239953121280.ingest.de.sentry.io/4511239957774416
 ```
 
+## Build Configuration
+
+The browser bundle reads runtime reporting settings from Vite build variables:
+
+- `VITE_SENTRY_DSN`
+- `VITE_SENTRY_ENVIRONMENT`
+- `VITE_SENTRY_RELEASE`
+- `VITE_SENTRY_CONTRIBUTION_ID` for preview builds only
+- `VITE_SENTRY_BRANCH` for preview builds only
+- `VITE_SENTRY_PR_NUMBER` for preview builds only
+
+The GitHub preview job injects these values during `npm run build:preview`, and the
+production job injects the DSN, environment, and release during `npm run build`.
+
 ## CLI Check
 
 ```bash
@@ -102,6 +116,14 @@ Allowed event data:
 - branch
 - PR number
 - non-sensitive browser and device metadata
+
+Browser SDK safeguards in the example app:
+
+- `sendDefaultPii: false`
+- breadcrumbs dropped before send
+- request, user, and extra payload fields stripped before send
+- preview route normalized from `/previews/<contribution-id>/...` to the app route
+- events limited to scripts served from the example app origin
 
 Blocked event data:
 

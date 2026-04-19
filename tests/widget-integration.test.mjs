@@ -16,6 +16,7 @@ test('main bootstraps the Crowdship widget with env-backed defaults', () => {
   const envExample = read('.env.example');
 
   assert.match(main, /ensureCrowdshipScript\(\)/);
+  assert.match(main, /initSentry\(\)/);
   assert.match(bootstrap, /https:\/\/crowdship\.aizenshtat\.eu\/widget\/v1\.js/);
   assert.match(bootstrap, /DEFAULT_CROWDSHIP_PROJECT = 'example'/);
   assert.match(bootstrap, /DEFAULT_CROWDSHIP_ENVIRONMENT = 'production'/);
@@ -23,6 +24,32 @@ test('main bootstraps the Crowdship widget with env-backed defaults', () => {
   assert.match(envExample, /VITE_CROWDSHIP_WIDGET_SRC=/);
   assert.match(envExample, /VITE_CROWDSHIP_PROJECT=/);
   assert.match(envExample, /VITE_CROWDSHIP_ENVIRONMENT=/);
+});
+
+test('browser sentry bootstrap keeps preview tags safe and scoped to the example app', () => {
+  const sentry = read('src/sentry.ts');
+  const viteEnv = read('src/vite-env.d.ts');
+
+  assert.match(sentry, /import \* as Sentry from '@sentry\/browser'/);
+  assert.match(sentry, /const APP_TAG = 'example'/);
+  assert.match(sentry, /environment === PREVIEW_ENVIRONMENT/);
+  assert.match(sentry, /tags\.contribution_id = contributionId/);
+  assert.match(sentry, /tags\.branch = branch/);
+  assert.match(sentry, /tags\.pr_number = prNumber/);
+  assert.match(sentry, /allowUrls: \[window\.location\.origin\]/);
+  assert.match(sentry, /sendDefaultPii: false/);
+  assert.match(sentry, /beforeBreadcrumb: \(\) => null/);
+  assert.match(sentry, /event\.request = undefined/);
+  assert.match(sentry, /event\.user = undefined/);
+  assert.match(sentry, /normalizeSentryRoute\(window\.location\.pathname\)/);
+  assert.match(sentry, /if \(previewMatch\) \{/);
+  assert.match(sentry, /return previewPath && previewPath !== '' \? previewPath : '\//);
+  assert.match(sentry, /integration\.name !== 'Breadcrumbs'/);
+  assert.match(viteEnv, /readonly VITE_SENTRY_DSN\?: string;/);
+  assert.match(viteEnv, /readonly VITE_SENTRY_RELEASE\?: string;/);
+  assert.match(viteEnv, /readonly VITE_SENTRY_CONTRIBUTION_ID\?: string;/);
+  assert.match(viteEnv, /readonly VITE_SENTRY_BRANCH\?: string;/);
+  assert.match(viteEnv, /readonly VITE_SENTRY_PR_NUMBER\?: string;/);
 });
 
 test('App opens Crowdship with safe context for the anomaly-replay request', () => {

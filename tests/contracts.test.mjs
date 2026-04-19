@@ -32,6 +32,7 @@ test('quality infrastructure files exist', () => {
     'scripts/quality-check.sh',
     'src/App.tsx',
     'src/main.tsx',
+    'src/sentry.ts',
     'infra/nginx/example.aizenshtat.eu.conf',
     'vite.config.ts',
   ].forEach(assertFile);
@@ -79,6 +80,7 @@ test('package scripts expose local quality commands', () => {
   const pkg = JSON.parse(read('package.json'));
 
   assert.equal(pkg.private, true);
+  assert.equal(pkg.dependencies['@sentry/browser'], '^10.49.0');
   assert.equal(pkg.scripts.build, 'tsc --noEmit && vite build');
   assert.equal(pkg.scripts['build:preview'], 'tsc --noEmit && vite build --mode preview');
   assert.equal(pkg.scripts['deploy:preview'], 'bash scripts/deploy-preview.sh');
@@ -168,9 +170,24 @@ test('sentry is documented as core team merge evidence', () => {
   const admin = read('docs/admin-setup.md');
 
   assert.match(sentry, /Merge-Readiness Evidence/);
+  assert.match(sentry, /VITE_SENTRY_DSN/);
+  assert.match(sentry, /VITE_SENTRY_RELEASE/);
+  assert.match(sentry, /request, user, and extra payload fields stripped before send/);
   assert.match(sentry, /contribution_id/);
   assert.match(sentry, /source map/iu);
   assert.match(preview, /No new unhandled Sentry issues/);
   assert.match(preview, /merge-readiness signal/);
   assert.match(admin, /Merge-Readiness Evidence/);
+});
+
+test('preview workflow injects browser sentry build metadata', () => {
+  const workflow = read('.github/workflows/smoke.yml');
+
+  assert.match(workflow, /VITE_SENTRY_DSN: \$\{\{ secrets\.SENTRY_DSN \}\}/);
+  assert.match(workflow, /VITE_SENTRY_ENVIRONMENT: preview/);
+  assert.match(workflow, /VITE_SENTRY_RELEASE: \$\{\{ steps\.meta\.outputs\.release \}\}/);
+  assert.match(workflow, /VITE_SENTRY_CONTRIBUTION_ID: \$\{\{ steps\.meta\.outputs\.contribution_id \}\}/);
+  assert.match(workflow, /VITE_SENTRY_BRANCH: \$\{\{ steps\.meta\.outputs\.branch \}\}/);
+  assert.match(workflow, /VITE_SENTRY_PR_NUMBER: \$\{\{ github\.event\.pull_request\.number \}\}/);
+  assert.match(workflow, /tracked at runtime; exercise the preview and use the filtered issues link/);
 });

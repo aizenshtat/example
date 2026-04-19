@@ -15,6 +15,7 @@
     "lint": "tsc --noEmit && bash -n scripts/*.sh .githooks/pre-commit"
   },
   "dependencies": {
+    "@sentry/browser": "^10.49.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },
