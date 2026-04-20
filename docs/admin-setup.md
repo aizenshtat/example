@@ -16,6 +16,7 @@ Add the widget script to the app shell:
   src="https://crowdship.aizenshtat.eu/widget/v1.js"
   data-crowdship-project="example"
   data-crowdship-environment="production"
+  data-crowdship-launcher="manual"
 ></script>
 ```
 
@@ -25,10 +26,17 @@ Required settings:
 
 - Project slug: `example`
 - Allowed origin: `https://example.aizenshtat.eu`
+- Execution mode: `hosted_remote_clone` for the hosted path, `self_hosted` when the customer runs the worker
 - Repository: `aizenshtat/example`
-- Implementation profile: optional for the demo `example` repo, `react_vite_app` for customer React/Vite repos
+- Default branch: `main`
+- Implementation profile: `orbital_ops_reference` for the demo `example` repo, `react_vite_app` for customer React/Vite repos
 - Preview URL pattern: `https://example.aizenshtat.eu/previews/{contributionId}/`
 - Production URL: `https://example.aizenshtat.eu/`
+
+Recommended split:
+
+- Public widget-safe config: project slug, widget script URL, allowed origins
+- Owner-only runtime config: execution mode, repository, default branch, implementation profile, preview URL pattern, production URL, and any self-hosted overrides
 
 ## Automation Settings
 
