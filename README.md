@@ -11,6 +11,7 @@ This repository now contains the first reference app slice:
 - Nginx host template at `infra/nginx/`
 - Local deploy helper at `scripts/deploy-static.sh`
 - Preview deploy helper at `scripts/deploy-preview.sh`
+- Crowdship CI status callback helper at `scripts/report-ci-status.sh`
 - External app role at `docs/external-app-role.md`
 - Implementation plan at `docs/implementation-plan.md`
 - Admin setup at `docs/admin-setup.md`
@@ -62,3 +63,7 @@ To build from a worktree or alternate checkout, pass the source repo path as the
 ```bash
 sudo ./scripts/deploy-preview.sh <contribution-id> /path/to/source-repo
 ```
+
+When GitHub Actions has `CROWDSHIP_BASE_URL` and `CROWDSHIP_CI_STATUS_TOKEN`,
+preview evidence and production publish status are also reported back to
+Crowdship through `POST /api/v1/contributions/<id>/ci-status`.

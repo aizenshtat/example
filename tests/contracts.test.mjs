@@ -31,6 +31,7 @@ test('quality infrastructure files exist', () => {
     'scripts/deploy-preview.sh',
     'scripts/preview-runtime-smoke.mjs',
     'scripts/quality-check.sh',
+    'scripts/report-ci-status.sh',
     'src/App.tsx',
     'src/main.tsx',
     'src/sentry.ts',
@@ -181,6 +182,7 @@ test('sentry is documented as core team merge evidence', () => {
   const sentry = read('docs/sentry.md');
   const preview = read('docs/preview-cicd.md');
   const admin = read('docs/admin-setup.md');
+  const githubConfig = read('docs/github-configuration.md');
 
   assert.match(sentry, /Merge-Readiness Evidence/);
   assert.match(sentry, /VITE_SENTRY_DSN/);
@@ -190,12 +192,17 @@ test('sentry is documented as core team merge evidence', () => {
   assert.match(sentry, /source map/iu);
   assert.match(preview, /No new unhandled Sentry issues/);
   assert.match(preview, /merge-readiness signal/);
+  assert.match(preview, /POST <CROWDSHIP_BASE_URL>\/api\/v1\/contributions\/<contribution-id>\/ci-status/);
+  assert.match(preview, /CROWDSHIP_CI_STATUS_TOKEN/);
   assert.match(admin, /Merge-Readiness Evidence/);
+  assert.match(githubConfig, /CROWDSHIP_CI_STATUS_TOKEN/);
+  assert.match(githubConfig, /CROWDSHIP_BASE_URL/);
 });
 
 test('preview workflow injects browser sentry build metadata', () => {
   const workflow = read('.github/workflows/smoke.yml');
   const smokeScript = read('scripts/preview-runtime-smoke.mjs');
+  const ciStatusScript = read('scripts/report-ci-status.sh');
 
   assert.match(workflow, /VITE_SENTRY_DSN: \$\{\{ secrets\.SENTRY_DSN \}\}/);
   assert.match(workflow, /VITE_SENTRY_ENVIRONMENT: preview/);
@@ -209,8 +216,22 @@ test('preview workflow injects browser sentry build metadata', () => {
   assert.match(workflow, /Browser runtime smoke:/);
   assert.match(workflow, /Widget open contract:/);
   assert.match(workflow, /New unhandled preview errors: \$\{ISSUE_COUNT:-unavailable\}/);
+  assert.match(workflow, /CROWDSHIP_BASE_URL: \$\{\{ vars\.CROWDSHIP_BASE_URL \}\}/);
+  assert.match(workflow, /CROWDSHIP_CI_STATUS_TOKEN: \$\{\{ secrets\.CROWDSHIP_CI_STATUS_TOKEN \}\}/);
+  assert.match(workflow, /bash scripts\/report-ci-status\.sh preview "\$\{\{ steps\.meta\.outputs\.contribution_id \}\}"/);
+  assert.match(workflow, /bash scripts\/report-ci-status\.sh production "\$\{\{ steps\.meta\.outputs\.contribution_id \}\}"/);
+  assert.match(workflow, /pull-requests: read/);
+  assert.match(workflow, /Resolve production metadata/);
+  assert.match(workflow, /head_commit_message="\$\(jq -r '\.head_commit\.message \/\/ ""' "\$GITHUB_EVENT_PATH"\)"/);
+  assert.match(workflow, /curl --silent --show-error --location --output "\$pull_request_file" --write-out '%\{http_code\}'/);
+  assert.match(workflow, /echo "contribution_id=\$contribution_id"/);
   assert.match(smokeScript, /window\.__crowdshipSmoke/);
   assert.match(smokeScript, /script\[data-example-crowdship-loader="true"\]/);
   assert.match(smokeScript, /Pressure replay online/);
   assert.match(smokeScript, /runtimeStatus/);
+  assert.match(ciStatusScript, /x-crowdship-ci-token/);
+  assert.match(ciStatusScript, /Authorization: Bearer/);
+  assert.match(ciStatusScript, /api\/v1\/contributions\/\$\{CONTRIBUTION_ID\}\/ci-status/);
+  assert.match(ciStatusScript, /with_optional_number\("newUnhandledPreviewErrors"/);
+  assert.match(ciStatusScript, /with_optional_string\("sentryRelease"/);
 });

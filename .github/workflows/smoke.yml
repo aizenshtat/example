@@ -36,6 +36,8 @@ jobs:
       pull-requests: write
     env:
       APP_DOMAIN: ${{ vars.APP_DOMAIN }}
+      CROWDSHIP_BASE_URL: ${{ vars.CROWDSHIP_BASE_URL }}
+      CROWDSHIP_CI_STATUS_TOKEN: ${{ secrets.CROWDSHIP_CI_STATUS_TOKEN }}
       DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
       DEPLOY_PORT: ${{ vars.DEPLOY_PORT }}
       DEPLOY_ROOT: ${{ vars.DEPLOY_WEB_ROOT }}
@@ -340,6 +342,47 @@ jobs:
           - New unhandled preview errors: ${ISSUE_COUNT:-unavailable} (${ISSUE_DETAIL:-not queried})
           - Failed preview sessions: not collected in this workflow
           EOF
+      - name: Report preview status to Crowdship
+        if: always() && steps.meta.outcome == 'success'
+        env:
+          BUILD_OUTCOME: ${{ steps.build_preview.outcome }}
+          DEPLOY_OUTCOME: ${{ steps.deploy_preview.outcome }}
+          ISSUE_COUNT: ${{ steps.evidence_preview.outputs.issue_count }}
+          ISSUE_STATUS: ${{ steps.evidence_preview.outputs.issue_status }}
+          SMOKE_OUTCOME: ${{ steps.smoke_preview.outcome }}
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ steps.deploy_config.outputs.configured }}" == 'true' ]]; then
+            if [[ "$DEPLOY_OUTCOME" == 'success' && "$SMOKE_OUTCOME" == 'success' ]]; then
+              preview_status="ready"
+            else
+              preview_status="failed"
+            fi
+          else
+            preview_status="configuration_required"
+          fi
+
+          new_unhandled_preview_errors=""
+          if [[ "$ISSUE_STATUS" == 'loaded' && "${ISSUE_COUNT:-}" =~ ^[0-9]+$ ]]; then
+            new_unhandled_preview_errors="$ISSUE_COUNT"
+          fi
+
+          BUILD_STATUS="${BUILD_OUTCOME:-failure}" \
+          PREVIEW_STATUS="$preview_status" \
+          PREVIEW_URL="${{ steps.meta.outputs.preview_url }}" \
+          REPOSITORY_FULL_NAME="${GITHUB_REPOSITORY}" \
+          PULL_REQUEST_NUMBER="${{ github.event.pull_request.number }}" \
+          PULL_REQUEST_STATUS="open" \
+          PULL_REQUEST_URL="${{ steps.meta.outputs.pr_url }}" \
+          BRANCH="${{ steps.meta.outputs.branch }}" \
+          RUN_ID="${GITHUB_RUN_ID}" \
+          RUN_URL="${{ steps.meta.outputs.run_url }}" \
+          SENTRY_RELEASE="${{ steps.meta.outputs.release }}" \
+          SENTRY_ISSUES_URL="${{ steps.meta.outputs.sentry_issues_url }}" \
+          NEW_UNHANDLED_PREVIEW_ERRORS="$new_unhandled_preview_errors" \
+          UPDATED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          bash scripts/report-ci-status.sh preview "${{ steps.meta.outputs.contribution_id }}"
       - name: Update preview PR comment
         if: always()
         env:
@@ -442,8 +485,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: quality
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      pull-requests: read
     env:
       APP_DOMAIN: ${{ vars.APP_DOMAIN }}
+      CROWDSHIP_BASE_URL: ${{ vars.CROWDSHIP_BASE_URL }}
+      CROWDSHIP_CI_STATUS_TOKEN: ${{ secrets.CROWDSHIP_CI_STATUS_TOKEN }}
       DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
       DEPLOY_PORT: ${{ vars.DEPLOY_PORT }}
       DEPLOY_ROOT: ${{ vars.DEPLOY_WEB_ROOT }}
@@ -466,18 +514,84 @@ jobs:
         run: npm ci
       - name: Resolve production metadata
         id: meta
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
+
+          resolve_contribution_id() {
+            local branch_name="$1"
+            local pull_request_body="$2"
+            local branch_suffix=""
+            local contribution_id=""
+
+            while IFS= read -r line; do
+              if [[ "$line" =~ ^[[:space:]]*[Cc]ontribution([[:space:]_-]|[[:space:]-][[:space:]]*)[Ii]d:[[:space:]]*([A-Za-z0-9._-]+)[[:space:]]*$ ]]; then
+                contribution_id="${BASH_REMATCH[2]}"
+                break
+              fi
+            done <<<"$pull_request_body"
+
+            branch_suffix="${branch_name#crowdship/}"
+
+            if [[ -z "$contribution_id" && "$branch_suffix" == *"--"* ]]; then
+              contribution_id="${branch_suffix%%--*}"
+            fi
+
+            if [[ -z "$contribution_id" && "$branch_suffix" =~ ^([A-Za-z0-9._]+-[0-9]+)-.+$ ]]; then
+              contribution_id="${BASH_REMATCH[1]}"
+            fi
+
+            printf '%s\n' "$contribution_id"
+          }
 
           app_domain="${APP_DOMAIN:-example.aizenshtat.eu}"
           deploy_root="${DEPLOY_ROOT:-/var/www/${app_domain}/html}"
           sentry_org="${SENTRY_ORG:-crowdship}"
           sentry_project="${SENTRY_PROJECT:-example}"
           sentry_url="${SENTRY_URL:-https://sentry.io/}"
+          head_commit_message="$(jq -r '.head_commit.message // ""' "$GITHUB_EVENT_PATH")"
+          contribution_id=""
+          branch=""
+          pull_request_number=""
+          pull_request_url=""
+          pull_request_body=""
+          pull_request_file="$(mktemp)"
+          trap 'rm -f "$pull_request_file"' EXIT
+
+          if [[ "$head_commit_message" =~ ^Merge\ pull\ request\ #([0-9]+)\ from\ [^/]+/(.+)$ ]]; then
+            pull_request_number="${BASH_REMATCH[1]}"
+            branch="${BASH_REMATCH[2]}"
+          elif [[ "$head_commit_message" =~ \(\#([0-9]+)\) ]]; then
+            pull_request_number="${BASH_REMATCH[1]}"
+          fi
+
+          if [[ -n "$pull_request_number" ]]; then
+            pull_request_status_code="$(
+              curl --silent --show-error --location --output "$pull_request_file" --write-out '%{http_code}' \
+                -H "Authorization: Bearer ${GH_TOKEN}" \
+                -H "Accept: application/vnd.github+json" \
+                "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/pulls/${pull_request_number}" || true
+            )"
+
+            if [[ "$pull_request_status_code" == '200' ]]; then
+              branch="${branch:-$(jq -r '.head.ref // ""' "$pull_request_file")}"
+              pull_request_url="$(jq -r '.html_url // ""' "$pull_request_file")"
+              pull_request_body="$(jq -r '.body // ""' "$pull_request_file")"
+            else
+              echo "Unable to load PR #${pull_request_number} for production CI status (HTTP ${pull_request_status_code:-unknown})." >&2
+            fi
+          fi
+
+          contribution_id="$(resolve_contribution_id "$branch" "$pull_request_body")"
 
           {
             echo "app_domain=$app_domain"
+            echo "branch=$branch"
+            echo "contribution_id=$contribution_id"
             echo "deploy_root=$deploy_root"
+            echo "pull_request_number=$pull_request_number"
+            echo "pull_request_url=$pull_request_url"
             echo "production_url=https://${app_domain}/"
             echo "production_mission_url=https://${app_domain}/mission"
             echo "release=example@${GITHUB_SHA}"
@@ -616,3 +730,36 @@ jobs:
           - Production URL: ${deploy_url_line}
           - Sentry release: ${sentry_release_line}
           EOF
+      - name: Report production status to Crowdship
+        if: always() && steps.meta.outputs.contribution_id != ''
+        env:
+          BUILD_OUTCOME: ${{ steps.build_production.outcome }}
+          DEPLOY_OUTCOME: ${{ steps.deploy_production.outcome }}
+          SMOKE_OUTCOME: ${{ steps.smoke_production.outcome }}
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ steps.deploy_config.outputs.configured }}" == 'true' ]]; then
+            if [[ "$DEPLOY_OUTCOME" == 'success' && "$SMOKE_OUTCOME" == 'success' ]]; then
+              production_status="published"
+            else
+              production_status="failed"
+            fi
+          else
+            production_status="configuration_required"
+          fi
+
+          BUILD_STATUS="${BUILD_OUTCOME:-failure}" \
+          PRODUCTION_STATUS="$production_status" \
+          PRODUCTION_URL="${{ steps.meta.outputs.production_url }}" \
+          REPOSITORY_FULL_NAME="${GITHUB_REPOSITORY}" \
+          PULL_REQUEST_NUMBER="${{ steps.meta.outputs.pull_request_number }}" \
+          PULL_REQUEST_STATUS="merged" \
+          PULL_REQUEST_URL="${{ steps.meta.outputs.pull_request_url }}" \
+          BRANCH="${{ steps.meta.outputs.branch }}" \
+          RUN_ID="${GITHUB_RUN_ID}" \
+          RUN_URL="${{ steps.meta.outputs.run_url }}" \
+          GIT_SHA="${GITHUB_SHA}" \
+          SENTRY_RELEASE="${{ steps.meta.outputs.release }}" \
+          UPDATED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          bash scripts/report-ci-status.sh production "${{ steps.meta.outputs.contribution_id }}"

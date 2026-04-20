@@ -67,7 +67,35 @@ After preview deploy, CI should provide Crowdship with:
 - New unhandled preview error count.
 - Failed preview session count when available.
 
-For the first implementation, this can be done by the worker polling GitHub and the preview URL. A direct CI callback can come later.
+The example workflow now posts this evidence directly to:
+
+```text
+POST <CROWDSHIP_BASE_URL>/api/v1/contributions/<contribution-id>/ci-status
+```
+
+using the `CROWDSHIP_CI_STATUS_TOKEN` secret.
+
+Preview callbacks report:
+
+- `environment=preview`
+- `buildStatus`
+- `previewStatus`
+- `previewUrl`
+- `repositoryFullName`
+- `pullRequestNumber`
+- `pullRequestUrl`
+- `branch`
+- `runId`
+- `runUrl`
+- `sentryRelease`
+- `sentryIssuesUrl`
+- `newUnhandledPreviewErrors` when loaded
+- `failedPreviewSessions` when collected
+- `updatedAt`
+
+Production callbacks use the same endpoint with `environment=production`,
+`productionStatus`, `productionUrl`, and `gitSha`. They only fire when the
+workflow can resolve a contribution id from the merged Crowdship pull request.
 
 ## Merge Evidence
 
