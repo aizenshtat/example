@@ -29,6 +29,7 @@ test('quality infrastructure files exist', () => {
     'public/manifest.webmanifest',
     'public/sw.js',
     'scripts/deploy-preview.sh',
+    'scripts/preview-runtime-smoke.mjs',
     'scripts/quality-check.sh',
     'src/App.tsx',
     'src/main.tsx',
@@ -85,9 +86,11 @@ test('package scripts expose local quality commands', () => {
   assert.equal(pkg.scripts['build:preview'], 'tsc --noEmit && vite build --mode preview');
   assert.equal(pkg.scripts['deploy:preview'], 'bash scripts/deploy-preview.sh');
   assert.equal(pkg.scripts.quality, 'bash scripts/quality-check.sh');
+  assert.equal(pkg.scripts['smoke:preview'], 'node scripts/preview-runtime-smoke.mjs');
   assert.equal(pkg.scripts.test, 'node --test tests/*.test.mjs');
   assert.equal(pkg.scripts.typecheck, 'tsc --noEmit');
   assert.equal(pkg.scripts.lint, 'tsc --noEmit && bash -n scripts/*.sh .githooks/pre-commit');
+  assert.equal(pkg.devDependencies.playwright, '^1.59.1');
 });
 
 test('preview deployment uses nested static paths and relative assets', () => {
@@ -182,6 +185,7 @@ test('sentry is documented as core team merge evidence', () => {
 
 test('preview workflow injects browser sentry build metadata', () => {
   const workflow = read('.github/workflows/smoke.yml');
+  const smokeScript = read('scripts/preview-runtime-smoke.mjs');
 
   assert.match(workflow, /VITE_SENTRY_DSN: \$\{\{ secrets\.SENTRY_DSN \}\}/);
   assert.match(workflow, /VITE_SENTRY_ENVIRONMENT: preview/);
@@ -189,5 +193,14 @@ test('preview workflow injects browser sentry build metadata', () => {
   assert.match(workflow, /VITE_SENTRY_CONTRIBUTION_ID: \$\{\{ steps\.meta\.outputs\.contribution_id \}\}/);
   assert.match(workflow, /VITE_SENTRY_BRANCH: \$\{\{ steps\.meta\.outputs\.branch \}\}/);
   assert.match(workflow, /VITE_SENTRY_PR_NUMBER: \$\{\{ github\.event\.pull_request\.number \}\}/);
-  assert.match(workflow, /tracked at runtime; exercise the preview and use the filtered issues link/);
+  assert.match(workflow, /npx playwright install --with-deps chromium/);
+  assert.match(workflow, /npm run smoke:preview -- "\$\{\{ steps\.meta\.outputs\.preview_mission_url \}\}"/);
+  assert.match(workflow, /sentry_issues_api=/);
+  assert.match(workflow, /Browser runtime smoke:/);
+  assert.match(workflow, /Widget open contract:/);
+  assert.match(workflow, /New unhandled preview errors: \$\{ISSUE_COUNT:-unavailable\}/);
+  assert.match(smokeScript, /window\.__crowdshipSmoke/);
+  assert.match(smokeScript, /script\[data-example-crowdship-loader="true"\]/);
+  assert.match(smokeScript, /Pressure replay online/);
+  assert.match(smokeScript, /runtimeStatus/);
 });

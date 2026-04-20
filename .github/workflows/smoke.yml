@@ -112,6 +112,7 @@ jobs:
             echo "sentry_project=$sentry_project"
             echo "sentry_url=$sentry_url"
             echo "sentry_issues_url=$sentry_issues_url"
+            echo "sentry_issues_api=${sentry_url%/}/api/0/projects/${sentry_org}/${sentry_project}/issues/?query=${encoded_query}&statsPeriod=24h"
           } >>"$GITHUB_OUTPUT"
       - name: Check preview deploy configuration
         id: deploy_config
@@ -198,6 +199,9 @@ jobs:
         run: |
           set -euo pipefail
           SKIP_BUILD=1 bash scripts/deploy-preview.sh "${{ steps.meta.outputs.contribution_id }}"
+      - name: Install Playwright browsers
+        if: steps.deploy_config.outputs.configured == 'true'
+        run: npx playwright install --with-deps chromium
       - name: Smoke test preview
         id: smoke_preview
         if: steps.deploy_config.outputs.configured == 'true'
@@ -205,14 +209,73 @@ jobs:
           set -euo pipefail
 
           root_html="$(mktemp)"
-          mission_html="$(mktemp)"
-          trap 'rm -f "$root_html" "$mission_html"' EXIT
+          smoke_file="$(mktemp)"
+          trap 'rm -f "$root_html" "$smoke_file"' EXIT
 
           curl --fail --silent --show-error --location "${{ steps.meta.outputs.preview_url }}" >"$root_html"
           grep -q '<title>Orbital Ops</title>' "$root_html"
 
-          curl --fail --silent --show-error --location "${{ steps.meta.outputs.preview_mission_url }}" >"$mission_html"
-          grep -q '<title>Orbital Ops</title>' "$mission_html"
+          npm run smoke:preview -- "${{ steps.meta.outputs.preview_mission_url }}" >"$smoke_file"
+
+          runtime_status="$(jq -r '.runtimeStatus' "$smoke_file")"
+          crowdship_ready="$(jq -r '.crowdshipReady' "$smoke_file")"
+          launcher_ready="$(jq -r '.launcherEnabled' "$smoke_file")"
+          widget_shell_ready="$(jq -r '.widgetShellReady' "$smoke_file")"
+          first_party_request_failures="$(jq -r '.firstPartyRequestFailures | length' "$smoke_file")"
+          page_error_count="$(jq -r '.pageErrors | length' "$smoke_file")"
+          console_error_count="$(jq -r '.consoleErrors | length' "$smoke_file")"
+
+          {
+            echo "runtime_status=$runtime_status"
+            echo "crowdship_ready=$crowdship_ready"
+            echo "launcher_ready=$launcher_ready"
+            echo "widget_shell_ready=$widget_shell_ready"
+            echo "first_party_request_failures=$first_party_request_failures"
+            echo "page_error_count=$page_error_count"
+            echo "console_error_count=$console_error_count"
+          } >>"$GITHUB_OUTPUT"
+
+          if [[ "$runtime_status" != 'verified' ]]; then
+            cat "$smoke_file" >&2
+            exit 1
+          fi
+      - name: Collect preview Sentry evidence
+        id: evidence_preview
+        if: always()
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          issues_file="$(mktemp)"
+          trap 'rm -f "$issues_file"' EXIT
+
+          issue_count="unavailable"
+          issue_status="unavailable"
+          issue_detail="SENTRY_AUTH_TOKEN missing."
+
+          if [[ -n "${SENTRY_AUTH_TOKEN:-}" ]]; then
+            status_code="$(curl --silent --show-error --location --output "$issues_file" --write-out '%{http_code}' \
+              -H "Authorization: Bearer ${SENTRY_AUTH_TOKEN}" \
+              -H "Accept: application/json" \
+              "${{ steps.meta.outputs.sentry_issues_api }}" || true)"
+
+            if [[ "$status_code" == '200' ]]; then
+              issue_count="$(jq 'length' "$issues_file")"
+              issue_status="loaded"
+              issue_detail="Loaded from the filtered Sentry issue query."
+            elif [[ -n "$status_code" ]]; then
+              issue_detail="Sentry issue query returned HTTP ${status_code}."
+            else
+              issue_detail="Sentry issue query could not be completed."
+            fi
+          fi
+
+          {
+            echo "issue_count=$issue_count"
+            echo "issue_status=$issue_status"
+            echo "issue_detail=$issue_detail"
+          } >>"$GITHUB_OUTPUT"
       - name: Preview summary
         if: always()
         env:
@@ -221,6 +284,16 @@ jobs:
           MISSING_DEPLOY: ${{ steps.deploy_config.outputs.missing }}
           SMOKE_OUTCOME: ${{ steps.smoke_preview.outcome }}
           SENTRY_OUTCOME: ${{ steps.sentry_preview.outcome }}
+          RUNTIME_STATUS: ${{ steps.smoke_preview.outputs.runtime_status }}
+          CROWDHIP_READY: ${{ steps.smoke_preview.outputs.crowdship_ready }}
+          LAUNCHER_READY: ${{ steps.smoke_preview.outputs.launcher_ready }}
+          WIDGET_SHELL_READY: ${{ steps.smoke_preview.outputs.widget_shell_ready }}
+          FIRST_PARTY_REQUEST_FAILURES: ${{ steps.smoke_preview.outputs.first_party_request_failures }}
+          PAGE_ERROR_COUNT: ${{ steps.smoke_preview.outputs.page_error_count }}
+          CONSOLE_ERROR_COUNT: ${{ steps.smoke_preview.outputs.console_error_count }}
+          ISSUE_COUNT: ${{ steps.evidence_preview.outputs.issue_count }}
+          ISSUE_STATUS: ${{ steps.evidence_preview.outputs.issue_status }}
+          ISSUE_DETAIL: ${{ steps.evidence_preview.outputs.issue_detail }}
         run: |
           set -euo pipefail
 
@@ -255,10 +328,17 @@ jobs:
           - Build: ${BUILD_OUTCOME}
           - Preview status: ${preview_status}
           - Preview URL: ${preview_url_line}
+          - Browser runtime smoke: ${RUNTIME_STATUS:-not-run}
+          - Crowdship API ready: ${CROWDHIP_READY:-false}
+          - Launcher enabled: ${LAUNCHER_READY:-false}
+          - Widget open contract: ${WIDGET_SHELL_READY:-false}
+          - First-party request failures: ${FIRST_PARTY_REQUEST_FAILURES:-unavailable}
+          - Page errors: ${PAGE_ERROR_COUNT:-unavailable}
+          - Console errors: ${CONSOLE_ERROR_COUNT:-unavailable}
           - Sentry release: ${sentry_release_line}
           - Filtered Sentry issues: ${{ steps.meta.outputs.sentry_issues_url }}
-          - New unhandled preview errors: tracked at runtime; exercise the preview and use the filtered issues link
-          - Failed preview sessions: unavailable until Session Replay is configured
+          - New unhandled preview errors: ${ISSUE_COUNT:-unavailable} (${ISSUE_DETAIL:-not queried})
+          - Failed preview sessions: not collected in this workflow
           EOF
       - name: Update preview PR comment
         if: always()
@@ -268,6 +348,15 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SENTRY_OUTCOME: ${{ steps.sentry_preview.outcome }}
           SMOKE_OUTCOME: ${{ steps.smoke_preview.outcome }}
+          RUNTIME_STATUS: ${{ steps.smoke_preview.outputs.runtime_status }}
+          CROWDHIP_READY: ${{ steps.smoke_preview.outputs.crowdship_ready }}
+          LAUNCHER_READY: ${{ steps.smoke_preview.outputs.launcher_ready }}
+          WIDGET_SHELL_READY: ${{ steps.smoke_preview.outputs.widget_shell_ready }}
+          FIRST_PARTY_REQUEST_FAILURES: ${{ steps.smoke_preview.outputs.first_party_request_failures }}
+          PAGE_ERROR_COUNT: ${{ steps.smoke_preview.outputs.page_error_count }}
+          CONSOLE_ERROR_COUNT: ${{ steps.smoke_preview.outputs.console_error_count }}
+          ISSUE_COUNT: ${{ steps.evidence_preview.outputs.issue_count }}
+          ISSUE_DETAIL: ${{ steps.evidence_preview.outputs.issue_detail }}
         run: |
           set -euo pipefail
 
@@ -309,10 +398,17 @@ jobs:
           - Run: ${{ steps.meta.outputs.run_url }}
           - Build: ${BUILD_OUTCOME}
           ${preview_url_line}
+          - Browser runtime smoke: ${RUNTIME_STATUS:-not-run}
+          - Crowdship API ready: ${CROWDHIP_READY:-false}
+          - Launcher enabled: ${LAUNCHER_READY:-false}
+          - Widget open contract: ${WIDGET_SHELL_READY:-false}
+          - First-party request failures: ${FIRST_PARTY_REQUEST_FAILURES:-unavailable}
+          - Page errors: ${PAGE_ERROR_COUNT:-unavailable}
+          - Console errors: ${CONSOLE_ERROR_COUNT:-unavailable}
           ${sentry_release_line}
           - Filtered Sentry issues: ${{ steps.meta.outputs.sentry_issues_url }}
-          - New unhandled preview errors: tracked at runtime; exercise the preview and use the filtered issues link
-          - Failed preview sessions: unavailable until Session Replay is configured
+          - New unhandled preview errors: ${ISSUE_COUNT:-unavailable} (${ISSUE_DETAIL:-not queried})
+          - Failed preview sessions: not collected in this workflow
           EOF
 
           jq -Rs '{body: .}' <"$comment_file" >"$payload_file"
