@@ -70,7 +70,8 @@ async function run() {
   });
   await page.waitForLoadState('networkidle', { timeout: 15_000 }).catch(() => {});
 
-  const requestButton = page.getByRole('button', { name: 'Request replay mode' });
+  const requestStrip = page.locator('.request-strip');
+  const requestButton = requestStrip.getByRole('button');
   await requestButton.waitFor({ state: 'visible', timeout: 15_000 });
 
   await page.waitForFunction(
@@ -105,6 +106,7 @@ async function run() {
     );
   });
   const launcherEnabled = await requestButton.isEnabled();
+  const launcherLabel = (await requestButton.textContent())?.trim() ?? '';
 
   const missionVisible = await page.getByRole('heading', {
     name: 'Astra-7 is threading a relay shadow with a tight hand on the throttle.',
@@ -172,6 +174,7 @@ async function run() {
     crowdshipReady,
     loaderScriptReady,
     launcherEnabled,
+    launcherLabel,
     widgetShellReady,
     widgetEvidence,
     consoleErrors,
