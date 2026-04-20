@@ -47,6 +47,7 @@ Preferred setup:
 
 - Install the Crowdship widget in the app UI.
 - Authorize repository automation through a scoped integration such as a GitHub App installation.
+- Use the Crowdship GitHub App registration fields and secret names documented in `../crowdship/docs/github-app-setup.md`.
 - Keep preview and production deploys in customer-controlled CI/CD.
 - Store secrets in customer-controlled secret stores or GitHub Actions secrets.
 
