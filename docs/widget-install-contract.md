@@ -14,6 +14,7 @@ The widget owns all contribution UI. The example app should not implement reques
   src="https://crowdship.aizenshtat.eu/widget/v1.js"
   data-crowdship-project="example"
   data-crowdship-environment="production"
+  data-crowdship-launcher="manual"
 ></script>
 ```
 
@@ -28,6 +29,16 @@ data-crowdship-user-role="customer"
 ```
 
 The host app decides which identity fields to share.
+
+## Optional Identify Starter
+
+```js
+window.Crowdship.identify({
+  id: currentUser.id,
+  email: currentUser.email,
+  role: currentUser.role
+});
+```
 
 ## Optional Runtime Context
 
