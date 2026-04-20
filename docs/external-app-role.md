@@ -22,7 +22,7 @@ Current shape:
 - A concrete missing workflow that invites useful product suggestions.
 - A visual spacecraft/relay scene that makes the product memorable during presentations.
 
-The canonical first feature is "Add anomaly replay for signal drops." This is narrow enough for an implementation agent but still specific enough for operations users to validate.
+Pressure replay for signal drops is already part of the product shell. The canonical first missing feature is now "Add relay-shadow markers to signal-drop replay." This stays narrow enough for an implementation agent while giving operators a concrete mission-control gap to validate.
 
 ## Future Widget Install
 
@@ -76,10 +76,10 @@ In the durable customer-owned model, the example app analogue should only need t
 The canonical first request is:
 
 ```text
-Add anomaly replay for signal drops.
+Add relay-shadow markers to signal-drop replay.
 ```
 
-The user submits this from the mission view. Crowdship receives the request with safe route, selected anomaly, and filter context, then turns it into structured product intent for the owner.
+The user submits this from the mission view. Pressure replay is already present, so Crowdship receives the request with safe route, selected anomaly, and filter context and turns the next missing layer of anomaly context into structured product intent for the owner.
 
 ## Required Real Artifacts
 

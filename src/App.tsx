@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  defaultMissionRequestSeed,
   missionEvents,
+  missionRequestSeeds,
   pressureReplayProfiles,
   telemetryProfiles,
   type CraftFilter,
   type MissionSeverity,
+  type MissionRequestSeed,
   type PressureReplayPoint,
   type WindowFilter,
 } from './data';
@@ -281,6 +284,21 @@ export function App() {
   const pressureWindowLabel = pressureReplay
     ? Array.from(new Set(pressureReplay.map((point) => phaseLabels[point.phase]))).join(' • ')
     : null;
+  const selectedRequestSeed = useMemo<MissionRequestSeed>(() => {
+    if (!selectedEvent?.anomalyKind) {
+      return defaultMissionRequestSeed;
+    }
+
+    return missionRequestSeeds[selectedEvent.anomalyKind] ?? defaultMissionRequestSeed;
+  }, [selectedEvent?.anomalyKind]);
+  const crowdshipRequest = useMemo(
+    () =>
+      ({
+        ...CROWDSHIP_REQUEST,
+        title: selectedRequestSeed.requestTitle,
+      }) as const,
+    [selectedRequestSeed.requestTitle],
+  );
   const notificationPanel = useMemo(
     () => buildNotificationPanel(notificationEntryState),
     [notificationEntryState],
@@ -363,7 +381,7 @@ export function App() {
   function openCrowdshipRequest() {
     window.__EXAMPLE_CROWDSHIP_CONTEXT__ = crowdshipContext;
     window.Crowdship?.setContext(crowdshipContext);
-    window.Crowdship?.open(CROWDSHIP_REQUEST);
+    window.Crowdship?.open(crowdshipRequest);
   }
 
   async function handleNotificationEntryPoint() {
@@ -435,7 +453,8 @@ export function App() {
             </span>
           </div>
           <p className="mission-note">
-            Pressure replay now tracks the selected anomaly inline with the rest of mission telemetry.
+            Pressure replay is already live where the mission needs it. The next upgrade is sharper
+            anomaly context for the selected report.
           </p>
         </div>
 
@@ -507,7 +526,7 @@ export function App() {
           <strong>{pressureReplay ? 'Pressure replay online' : 'No pressure replay'}</strong>
           <small>
             {pressureReplay
-              ? `${selectedEvent?.title ?? 'Selected anomaly'} now includes before, during, and after pressure context.`
+              ? `${selectedEvent?.title ?? 'Selected anomaly'} now includes before, during, and after pressure context. Relay-shadow timing still needs its own layer.`
               : selectedEvent?.nextStep ?? 'Pick a report to inspect anomaly-linked pressure context.'}
           </small>
         </article>
@@ -516,10 +535,11 @@ export function App() {
       <section className="request-strip" aria-labelledby="request-title">
         <div>
           <p className="eyebrow">Contribution opportunity</p>
-          <h2 id="request-title">Signal drops need inline replay.</h2>
-          <p className="intro">
-            The team can see the spike, but not the telemetry lead-in that explains it.
-          </p>
+          <h2 id="request-title">{selectedRequestSeed.headline}</h2>
+          <p className="intro">{selectedRequestSeed.detail}</p>
+          <div className="context-row">
+            <span className="context-chip">{selectedRequestSeed.status}</span>
+          </div>
         </div>
         <button
           className="primary-button"
@@ -527,7 +547,7 @@ export function App() {
           onClick={openCrowdshipRequest}
           disabled={crowdshipStatus !== 'ready'}
         >
-          Request replay mode
+          {selectedRequestSeed.buttonLabel}
         </button>
       </section>
 

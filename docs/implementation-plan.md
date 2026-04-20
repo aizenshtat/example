@@ -46,7 +46,7 @@ Deliverables:
 
 - Mission console with animated telemetry, mission filters, and selected anomaly state.
 - Spacecraft/relay visual asset and purposeful motion for presentation walkthroughs.
-- Clear missing replay workflow: users can see why "Add anomaly replay for signal drops" matters.
+- Clear missing mission-context workflow: users can see why "Add relay-shadow markers to signal-drop replay" matters even after pressure replay ships.
 - Crowdship widget launcher placement reserved but not faked.
 - Safe context object prepared for Crowdship.
 - Mobile-first layout at 390x844.

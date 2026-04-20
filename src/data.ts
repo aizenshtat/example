@@ -8,6 +8,14 @@ export type PressureReplayPoint = {
   phase: 'before' | 'during' | 'after';
 };
 
+export type MissionRequestSeed = {
+  buttonLabel: string;
+  detail: string;
+  headline: string;
+  requestTitle: string;
+  status: string;
+};
+
 export type MissionEvent = {
   id: string;
   title: string;
@@ -65,7 +73,7 @@ export const missionEvents: MissionEvent[] = [
     window: 'last-30',
     severity: 'critical',
     summary: 'Packet loss spiked as Astra-7 crossed behind the Europa relay shadow.',
-    nextStep: 'Replay the drop against the last clean telemetry frame before command uplink.',
+    nextStep: 'Line up the live pressure replay with relay-shadow entry and reacquisition markers before command uplink.',
     signal: '42%',
     packetLoss: '18%',
     latency: '940 ms',
@@ -143,3 +151,51 @@ export const pressureReplayProfiles: Partial<Record<string, PressureReplayPoint[
     { label: 'T+12', pressure: 93, phase: 'after' },
   ],
 };
+
+export const missionRequestSeeds: Record<
+  NonNullable<MissionEvent['anomalyKind']>,
+  MissionRequestSeed
+> = {
+  'signal-drop': {
+    buttonLabel: 'Request shadow markers',
+    detail:
+      'Pressure replay is live, but ops still cannot line up eclipse entry, deepest occlusion, and reacquisition on the same anomaly timeline.',
+    headline: 'Signal drops need relay-shadow markers.',
+    requestTitle: 'Add relay-shadow markers to signal-drop replay',
+    status: 'Pressure replay live',
+  },
+  'thermal-drift': {
+    buttonLabel: 'Request forecast bands',
+    detail:
+      'The deck shows the drift, but it cannot project the next three dark-side passes against heater limits.',
+    headline: 'Thermal drift needs a cold-soak forecast.',
+    requestTitle: 'Add cold-soak forecast bands for thermal drift',
+    status: 'Current drift live',
+  },
+  'battery-recovery': {
+    buttonLabel: 'Request burn markers',
+    detail:
+      'Battery recovery is visible, but the team cannot line up trim-burn start, payload wake, and nominal charge return.',
+    headline: 'Recovery traces need burn markers.',
+    requestTitle: 'Add burn markers to battery recovery view',
+    status: 'Recovery trace live',
+  },
+  'relay-handshake': {
+    buttonLabel: 'Request orbit compare',
+    detail:
+      'Retry counts are visible, but ops cannot compare this Europa pass with the previous orbit without leaving the deck.',
+    headline: 'Retry loops need prior-orbit compare.',
+    requestTitle: 'Add prior-orbit comparison for relay handshake retries',
+    status: 'Retry loop live',
+  },
+  'payload-idle': {
+    buttonLabel: 'Request burst planner',
+    detail:
+      'The quiet window is visible, but there is no planner that recommends the safest burst for the next clean pass.',
+    headline: 'Clean downlinks need a calibration planner.',
+    requestTitle: 'Add a calibration burst planner for clean downlinks',
+    status: 'Window status live',
+  },
+};
+
+export const defaultMissionRequestSeed = missionRequestSeeds['signal-drop'];

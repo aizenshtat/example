@@ -45,6 +45,8 @@ test('implementation plan references required contracts', () => {
   assert.match(plan, /Vite/);
   assert.match(plan, /React/);
   assert.match(plan, /TypeScript/);
+  assert.match(plan, /Add relay-shadow markers to signal-drop replay/);
+  assert.doesNotMatch(plan, /Add anomaly replay for signal drops/);
   assert.match(plan, /docs\/external-app-role\.md/);
   assert.match(plan, /docs\/widget-install-contract\.md/);
   assert.match(plan, /docs\/sentry\.md/);
@@ -140,16 +142,24 @@ test('preview deployment uses nested static paths and relative assets', () => {
 test('reference app implements orbital ops and pwa foundation', () => {
   const app = read('src/App.tsx');
   const bootstrap = read('src/crowdship.ts');
+  const data = read('src/data.ts');
+  const externalRole = read('docs/external-app-role.md');
   const manifest = JSON.parse(read('public/manifest.webmanifest'));
   const sw = read('public/sw.js');
   const html = read('index.html');
 
   assert.match(app, /Orbital Ops/);
   assert.match(app, /type:\s*'feature_request'/);
+  assert.match(app, /selectedRequestSeed\.buttonLabel/);
+  assert.match(app, /selectedRequestSeed\.requestTitle/);
   assert.match(app, /Route \/mission/);
   assert.match(app, /selectedObjectType:\s*'anomaly'/);
   assert.match(app, /signal-drop-17/);
   assert.match(app, /__EXAMPLE_CROWDSHIP_CONTEXT__/);
+  assert.match(data, /Request shadow markers/);
+  assert.match(data, /Add relay-shadow markers to signal-drop replay/);
+  assert.match(externalRole, /Add relay-shadow markers to signal-drop replay/);
+  assert.doesNotMatch(externalRole, /Add anomaly replay for signal drops/);
   assert.match(bootstrap, /getCrowdshipBootstrapConfig/);
   assert.match(bootstrap, /dataset\.crowdshipProject = config\.project/);
   assert.equal(manifest.name, 'Orbital Ops');

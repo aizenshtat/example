@@ -52,13 +52,18 @@ test('browser sentry bootstrap keeps preview tags safe and scoped to the example
   assert.match(viteEnv, /readonly VITE_SENTRY_PR_NUMBER\?: string;/);
 });
 
-test('App opens Crowdship with safe context for the anomaly-replay request', () => {
+test('App opens Crowdship with safe context for the seeded relay-shadow request', () => {
   const app = read('src/App.tsx');
+  const data = read('src/data.ts');
 
   assert.match(app, /window\.Crowdship\?\.setContext\(crowdshipContext\)/);
-  assert.match(app, /window\.Crowdship\?\.open\(CROWDSHIP_REQUEST\)/);
+  assert.match(app, /window\.Crowdship\?\.open\(crowdshipRequest\)/);
   assert.match(app, /type:\s*'feature_request'/);
+  assert.match(app, /title:\s*selectedRequestSeed\.requestTitle/);
+  assert.match(data, /missionRequestSeeds/);
+  assert.match(data, /Add relay-shadow markers to signal-drop replay/);
   assert.doesNotMatch(app, /Add anomaly replay for signal drops/);
+  assert.doesNotMatch(app, /Signal drops need inline replay\./);
   assert.match(app, /route:\s*'\/mission'/);
   assert.match(app, /selectedObjectType:\s*'anomaly'/);
   assert.match(app, /signal-drop-17/);
@@ -71,12 +76,17 @@ test('App renders anomaly pressure replay only for relevant selected anomalies',
   const styles = read('src/styles.css');
 
   assert.match(app, /Pressure replay/);
+  assert.match(app, /Pressure replay is already live where the mission needs it\./);
+  assert.match(app, /Relay-shadow timing still needs its own layer\./);
+  assert.match(app, /selectedRequestSeed\.status/);
+  assert.match(data, /Pressure replay live/);
   assert.match(app, /Pressure trend around \{selectedEvent\.id\}/);
   assert.match(app, /before, during, and after/);
   assert.match(app, /pressureReplay \? \(/);
   assert.match(app, /No anomaly pressure comparison/);
   assert.match(data, /pressureReplayProfiles/);
   assert.match(data, /'signal-drop-17'/);
+  assert.match(data, /Line up the live pressure replay with relay-shadow entry and reacquisition markers/);
   assert.match(styles, /pressure-widget/);
   assert.match(styles, /pressure-chart/);
 });
