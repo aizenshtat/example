@@ -181,11 +181,11 @@ export const missionRequestSeeds: Record<
     status: 'Recovery trace live',
   },
   'relay-handshake': {
-    buttonLabel: 'Request orbit compare',
+    buttonLabel: 'Request orbit overlay',
     detail:
-      'Retry counts are visible, but ops cannot compare this Europa pass with the previous orbit without leaving the deck.',
-    headline: 'Retry loops need prior-orbit compare.',
-    requestTitle: 'Add prior-orbit comparison for relay handshake retries',
+      'Retry counts are visible, but ops cannot overlay this Europa pass with the previous orbit without leaving the deck.',
+    headline: 'Retry loops need a prior-orbit overlay.',
+    requestTitle: 'Add prior-orbit overlay for relay handshake retries',
     status: 'Retry loop live',
   },
   'payload-idle': {
