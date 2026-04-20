@@ -61,7 +61,7 @@ test('App opens Crowdship with safe context for the seeded relay-shadow request'
   assert.match(app, /type:\s*'feature_request'/);
   assert.match(app, /title:\s*selectedRequestSeed\.requestTitle/);
   assert.match(data, /missionRequestSeeds/);
-  assert.match(data, /Add relay-shadow markers to signal-drop replay/);
+  assert.match(data, /Add eclipse markers to signal-drop replay/);
   assert.doesNotMatch(app, /Add anomaly replay for signal drops/);
   assert.doesNotMatch(app, /Signal drops need inline replay\./);
   assert.match(app, /route:\s*'\/mission'/);

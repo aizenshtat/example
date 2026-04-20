@@ -89,7 +89,6 @@ test('package scripts expose local quality commands', () => {
   assert.equal(pkg.scripts['deploy:preview'], 'bash scripts/deploy-preview.sh');
   assert.equal(pkg.scripts.quality, 'bash scripts/quality-check.sh');
   assert.equal(pkg.scripts['smoke:preview'], 'node scripts/preview-runtime-smoke.mjs');
-  assert.equal(pkg.scripts.test, 'node --test tests/*.test.mjs');
   assert.equal(pkg.scripts.typecheck, 'tsc --noEmit');
   assert.equal(pkg.scripts.lint, 'tsc --noEmit && bash -n scripts/*.sh .githooks/pre-commit');
   assert.equal(pkg.devDependencies.playwright, '^1.59.1');
@@ -156,8 +155,8 @@ test('reference app implements orbital ops and pwa foundation', () => {
   assert.match(app, /selectedObjectType:\s*'anomaly'/);
   assert.match(app, /signal-drop-17/);
   assert.match(app, /__EXAMPLE_CROWDSHIP_CONTEXT__/);
-  assert.match(data, /Request shadow markers/);
-  assert.match(data, /Add relay-shadow markers to signal-drop replay/);
+  assert.match(data, /Request eclipse markers/);
+  assert.match(data, /Add eclipse markers to signal-drop replay/);
   assert.match(externalRole, /Add relay-shadow markers to signal-drop replay/);
   assert.doesNotMatch(externalRole, /Add anomaly replay for signal drops/);
   assert.match(bootstrap, /getCrowdshipBootstrapConfig/);

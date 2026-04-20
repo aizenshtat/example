@@ -157,11 +157,11 @@ export const missionRequestSeeds: Record<
   MissionRequestSeed
 > = {
   'signal-drop': {
-    buttonLabel: 'Request shadow markers',
+    buttonLabel: 'Request eclipse markers',
     detail:
       'Pressure replay is live, but ops still cannot line up eclipse entry, deepest occlusion, and reacquisition on the same anomaly timeline.',
-    headline: 'Signal drops need relay-shadow markers.',
-    requestTitle: 'Add relay-shadow markers to signal-drop replay',
+    headline: 'Signal drops need eclipse markers.',
+    requestTitle: 'Add eclipse markers to signal-drop replay',
     status: 'Pressure replay live',
   },
   'thermal-drift': {
