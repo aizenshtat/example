@@ -26,6 +26,7 @@ Required settings:
 - Project slug: `example`
 - Allowed origin: `https://example.aizenshtat.eu`
 - Repository: `aizenshtat/example`
+- Implementation profile: optional for the demo `example` repo, `react_vite_app` for customer React/Vite repos
 - Preview URL pattern: `https://example.aizenshtat.eu/previews/{contributionId}/`
 - Production URL: `https://example.aizenshtat.eu/`
 
@@ -35,6 +36,7 @@ Admins choose:
 
 - Whether approved specs automatically queue implementation.
 - Which repo branch is the default base.
+- Which implementation profile Crowdship is allowed to use for repo edits.
 - Maximum implementation job runtime.
 - Whether requester-approved previews can open voting automatically.
 - Vote threshold for core team review.
