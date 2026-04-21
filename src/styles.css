@@ -251,6 +251,7 @@ h3 {
 
 .intro,
 .mission-note,
+.section-helper,
 .empty-state span,
 .detail-grid p,
 .pressure-widget__lead,
@@ -659,6 +660,10 @@ h3 {
   margin-bottom: 0;
 }
 
+.section-helper {
+  margin-top: 4px;
+}
+
 .event-list,
 .detail-stack,
 .pressure-widget,
@@ -788,6 +793,11 @@ h3 {
 .event-row__tag--time {
   background: rgba(255, 255, 255, 0.05);
   color: var(--ink);
+}
+
+.event-row__tag--context {
+  background: rgba(127, 212, 255, 0.12);
+  color: var(--sky);
 }
 
 .empty-state {

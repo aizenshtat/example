@@ -43,10 +43,18 @@ export function ensureCrowdshipScript() {
   const config = getCrowdshipBootstrapConfig();
   const script = document.createElement('script');
   script.async = true;
+  script.crossOrigin = 'anonymous';
   script.src = config.widgetSrc;
   script.dataset.crowdshipProject = config.project;
   script.dataset.crowdshipEnvironment = config.environment;
   script.dataset.crowdshipLauncher = config.launcher;
+  script.dataset.crowdshipAccent = '#f5b544';
+  script.dataset.crowdshipBackground = '#f7f8f2';
+  script.dataset.crowdshipSurface = '#ffffff';
+  script.dataset.crowdshipText = '#111613';
+  script.dataset.crowdshipMuted = '#5b655f';
+  script.dataset.crowdshipRadius = '8px';
+  script.dataset.crowdshipLauncherLabel = 'Suggest a change';
   script.dataset.exampleCrowdshipLoader = 'true';
   document.body.appendChild(script);
   return script;

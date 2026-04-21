@@ -1,13 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  defaultMissionRequestSeed,
   missionEvents,
-  missionRequestSeeds,
   pressureReplayProfiles,
   telemetryProfiles,
   type CraftFilter,
   type MissionSeverity,
-  type MissionRequestSeed,
   type PressureReplayPoint,
   type WindowFilter,
 } from './data';
@@ -55,21 +52,35 @@ type CrowdshipContext = {
   };
   appVersion: string;
   route: '/mission';
-  selectedObjectId: string | null;
-  selectedObjectType: 'anomaly';
+  selectedObjectId?: string;
+  selectedObjectType?: 'anomaly';
+  selectionExplicit?: true;
 };
 
-function buildContext(craft: CraftFilter, window: WindowFilter, selectedObjectId: string | null) {
-  return {
+function buildContext(
+  craft: CraftFilter,
+  window: WindowFilter,
+  selectedObjectId?: string,
+): CrowdshipContext {
+  const context: CrowdshipContext = {
     activeFilters: {
       craft,
       window,
     },
     appVersion: '2026.04.18',
     route: '/mission',
+  };
+
+  if (!selectedObjectId) {
+    return context;
+  }
+
+  return {
+    ...context,
     selectedObjectId,
     selectedObjectType: 'anomaly',
-  } satisfies CrowdshipContext;
+    selectionExplicit: true,
+  };
 }
 
 function formatCraft(craft: Exclude<CraftFilter, 'all'>) {
@@ -230,7 +241,7 @@ function buildNotificationPanel(state: NotificationEntryState): NotificationPane
 export function App() {
   const [craft, setCraft] = useState<CraftFilter>('all');
   const [windowFilter, setWindowFilter] = useState<WindowFilter>('last-30');
-  const [selectedEventId, setSelectedEventId] = useState<string>('signal-drop-17');
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [crowdshipStatus, setCrowdshipStatus] = useState<'loading' | 'ready' | 'unavailable'>(
     'loading',
   );
@@ -246,8 +257,9 @@ export function App() {
     });
   }, [craft, windowFilter]);
 
-  const selectedEvent =
-    visibleEvents.find((event) => event.id === selectedEventId) ?? visibleEvents[0] ?? null;
+  const selectedEvent = selectedEventId
+    ? visibleEvents.find((event) => event.id === selectedEventId) ?? null
+    : null;
 
   const selectedEventIndex = selectedEvent
     ? visibleEvents.findIndex((event) => event.id === selectedEvent.id)
@@ -270,7 +282,7 @@ export function App() {
   const telemetryCraftLabel = telemetryCraft === 'all' ? 'All craft' : formatCraft(telemetryCraft);
 
   const crowdshipContext = useMemo(
-    () => buildContext(craft, windowFilter, selectedEvent?.id ?? null),
+    () => buildContext(craft, windowFilter, selectedEvent?.id),
     [craft, selectedEvent?.id, windowFilter],
   );
 
@@ -284,31 +296,16 @@ export function App() {
   const pressureWindowLabel = pressureReplay
     ? Array.from(new Set(pressureReplay.map((point) => phaseLabels[point.phase]))).join(' • ')
     : null;
-  const selectedRequestSeed = useMemo<MissionRequestSeed>(() => {
-    if (!selectedEvent?.anomalyKind) {
-      return defaultMissionRequestSeed;
-    }
-
-    return missionRequestSeeds[selectedEvent.anomalyKind] ?? defaultMissionRequestSeed;
-  }, [selectedEvent?.anomalyKind]);
-  const crowdshipRequest = useMemo(
-    () =>
-      ({
-        ...CROWDSHIP_REQUEST,
-        title: selectedRequestSeed.requestTitle,
-      }) as const,
-    [selectedRequestSeed.requestTitle],
-  );
   const notificationPanel = useMemo(
     () => buildNotificationPanel(notificationEntryState),
     [notificationEntryState],
   );
 
   useEffect(() => {
-    if (selectedEvent && selectedEvent.id !== selectedEventId) {
-      setSelectedEventId(selectedEvent.id);
+    if (selectedEventId && !visibleEvents.some((event) => event.id === selectedEventId)) {
+      setSelectedEventId(null);
     }
-  }, [selectedEvent, selectedEventId]);
+  }, [selectedEventId, visibleEvents]);
 
   useEffect(() => {
     window.__EXAMPLE_CROWDSHIP_CONTEXT__ = crowdshipContext;
@@ -381,7 +378,7 @@ export function App() {
   function openCrowdshipRequest() {
     window.__EXAMPLE_CROWDSHIP_CONTEXT__ = crowdshipContext;
     window.Crowdship?.setContext(crowdshipContext);
-    window.Crowdship?.open(crowdshipRequest);
+    window.Crowdship?.open(CROWDSHIP_REQUEST);
   }
 
   async function handleNotificationEntryPoint() {
@@ -449,12 +446,12 @@ export function App() {
             <span className="route-chip route-chip--soft">Craft {telemetryCraftLabel}</span>
             <span className="route-chip route-chip--soft">Window {windowLabels[windowFilter]}</span>
             <span className="route-chip route-chip--soft">
-              Report {selectedEventPosition === '0/0' ? '0/0' : selectedEventPosition}
+              Report {selectedEvent ? selectedEventPosition : 'not attached'}
             </span>
           </div>
           <p className="mission-note">
-            Pressure replay is already live where the mission needs it. The next upgrade is sharper
-            anomaly context for the selected report.
+            Pressure replay is already live where the mission needs it. Pick a report to attach
+            anomaly context before opening a request.
           </p>
         </div>
 
@@ -481,7 +478,9 @@ export function App() {
               {selectedEvent ? `${selectedEvent.title}` : 'Mission telemetry'}
             </span>
             <strong>
-              Report {selectedEventPosition} • Packet loss {selectedEvent?.packetLoss ?? '0%'}
+              {selectedEvent
+                ? `Report ${selectedEventPosition} • Packet loss ${selectedEvent.packetLoss}`
+                : 'No report attached'}
             </strong>
           </div>
           <dl className="scene-footer">
@@ -534,11 +533,16 @@ export function App() {
 
       <section className="request-strip" aria-labelledby="request-title">
         <div>
-          <p className="eyebrow">Contribution opportunity</p>
-          <h2 id="request-title">{selectedRequestSeed.headline}</h2>
-          <p className="intro">{selectedRequestSeed.detail}</p>
+          <p className="eyebrow">Contribution</p>
+          <h2 id="request-title">Spot a missing mission workflow?</h2>
+          <p className="intro">
+            Describe the improvement in your own words. Select a report first only when the
+            change depends on a specific anomaly.
+          </p>
           <div className="context-row">
-            <span className="context-chip">{selectedRequestSeed.status}</span>
+            <span className="context-chip">
+              {selectedEvent ? `Selected ${selectedEvent.title}` : 'Page context only'}
+            </span>
           </div>
         </div>
         <button
@@ -547,7 +551,7 @@ export function App() {
           onClick={openCrowdshipRequest}
           disabled={crowdshipStatus !== 'ready'}
         >
-          {selectedRequestSeed.buttonLabel}
+          Suggest a change
         </button>
       </section>
 
@@ -624,6 +628,9 @@ export function App() {
             <div>
               <p className="eyebrow">Mission reports</p>
               <h2 id="event-title">Relay watchlist</h2>
+              <p className="section-helper">
+                Select a report to attach anomaly context to the next Crowdship request.
+              </p>
             </div>
             <div className="context-chip" aria-label="Visible report count">
               {visibleEvents.length} visible
@@ -659,6 +666,9 @@ export function App() {
                       <span className="event-row__tag">Packet {event.packetLoss}</span>
                       <span className="event-row__tag">Latency {event.latency}</span>
                       <span className="event-row__tag event-row__tag--time">{event.timestamp}</span>
+                      <span className="event-row__tag event-row__tag--context">
+                        {isSelected ? 'Context attached' : 'Attach context'}
+                      </span>
                     </div>
                   </button>
                 );
@@ -675,7 +685,7 @@ export function App() {
         <section className="detail-band" aria-labelledby="detail-title">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">Selected report</p>
+              <p className="eyebrow">Attached report</p>
               <h2 id="detail-title">{selectedEvent?.title ?? 'Nothing selected'}</h2>
             </div>
           </div>
@@ -803,8 +813,8 @@ export function App() {
             </div>
           ) : (
             <div className="empty-state">
-              <strong>No report selected</strong>
-              <span>Pick a report to inspect the latest telemetry.</span>
+              <strong>No report attached</strong>
+              <span>Pick a report to inspect telemetry and attach anomaly context.</span>
             </div>
           )}
         </section>
@@ -817,7 +827,7 @@ declare global {
   interface Window {
     __EXAMPLE_CROWDSHIP_CONTEXT__?: CrowdshipContext;
     Crowdship?: {
-      open: (request: { title?: string; type: 'feature_request' }) => void;
+      open: (request?: { title?: string; type: 'feature_request' }) => void;
       setContext: (context: CrowdshipContext) => void;
     };
   }

@@ -46,8 +46,6 @@ window.Crowdship.identify({
 window.Crowdship.setContext({
   route: window.location.pathname,
   appVersion: "2026.04.18",
-  selectedObjectType: "report",
-  selectedObjectId: "report-7",
   activeFilters: {
     segment: "enterprise",
     period: "last-30-days"
@@ -56,6 +54,23 @@ window.Crowdship.setContext({
 ```
 
 The host app is responsible for keeping this context safe and intentional.
+
+Only include `selectedObjectType` and `selectedObjectId` after the user explicitly selects an
+object in the host app:
+
+```js
+window.Crowdship.setContext({
+  route: window.location.pathname,
+  appVersion: "2026.04.18",
+  selectedObjectType: "report",
+  selectedObjectId: "report-7",
+  selectionExplicit: true,
+  activeFilters: {
+    segment: "enterprise",
+    period: "last-30-days"
+  }
+});
+```
 
 ## Widget Events
 

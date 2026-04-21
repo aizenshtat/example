@@ -102,7 +102,9 @@ async function run() {
     return (
       script.getAttribute('data-crowdship-project') === 'example' &&
       script.getAttribute('data-crowdship-environment') === 'production' &&
-      script.getAttribute('data-crowdship-launcher') === 'manual'
+      script.getAttribute('data-crowdship-launcher') === 'manual' &&
+      script.getAttribute('data-crowdship-accent') === '#f5b544' &&
+      script.getAttribute('data-crowdship-launcher-label') === 'Suggest a change'
     );
   });
   const launcherEnabled = await requestButton.isEnabled();
@@ -111,8 +113,16 @@ async function run() {
   const missionVisible = await page.getByRole('heading', {
     name: 'Astra-7 is threading a relay shadow with a tight hand on the throttle.',
   }).isVisible();
-  const pressureReplayOnline = await page.getByText('Pressure replay online', { exact: true }).isVisible();
-  const pressureTrendVisible = await page.getByRole('heading', { name: 'Pressure trend around signal-drop-17' }).isVisible();
+  const noReportAttachedVisible = await page.getByText('No report attached', { exact: true }).first().isVisible();
+  const noSelectedContextBeforeRequest = await page.evaluate(() => {
+    const context = window.__EXAMPLE_CROWDSHIP_CONTEXT__;
+    return (
+      context &&
+      context.route === '/mission' &&
+      !Object.prototype.hasOwnProperty.call(context, 'selectedObjectType') &&
+      !Object.prototype.hasOwnProperty.call(context, 'selectedObjectId')
+    );
+  });
   const orbiterAssetLoaded = await page.evaluate(() => {
     const image = document.querySelector('.orbiter-art');
     return image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0;
@@ -120,7 +130,7 @@ async function run() {
 
   await requestButton.click();
 
-  const widgetOpenState = await page.waitForFunction(
+  const defaultWidgetOpenState = await page.waitForFunction(
     () => {
       const smoke = window.__crowdshipSmoke;
       if (!smoke || !Array.isArray(smoke.opens) || smoke.opens.length === 0) {
@@ -139,19 +149,60 @@ async function run() {
     { timeout: 15_000 },
   );
 
-  const widgetEvidence = await widgetOpenState.jsonValue();
+  const defaultWidgetEvidence = await defaultWidgetOpenState.jsonValue();
+
+  await page.getByRole('button', { name: /Signal drop over Europa relay/ }).click();
+
+  const pressureReplayOnline = await page.getByText('Pressure replay online', { exact: true }).isVisible();
+  const pressureTrendVisible = await page.getByRole('heading', { name: 'Pressure trend around signal-drop-17' }).isVisible();
+  const selectedContextVisible = await page.getByText('Context attached', { exact: true }).isVisible();
+
+  await requestButton.click();
+
+  const selectedWidgetOpenState = await page.waitForFunction(
+    () => {
+      const smoke = window.__crowdshipSmoke;
+      if (!smoke || !Array.isArray(smoke.opens) || smoke.opens.length < 2) {
+        return false;
+      }
+
+      const context = Array.isArray(smoke.contexts) && smoke.contexts.length > 0 ? smoke.contexts[smoke.contexts.length - 1] : null;
+      const request = smoke.opens[smoke.opens.length - 1];
+
+      return {
+        context,
+        request,
+      };
+    },
+    undefined,
+    { timeout: 15_000 },
+  );
+
+  const selectedWidgetEvidence = await selectedWidgetOpenState.jsonValue();
   const widgetShellReady =
-    widgetEvidence &&
-    widgetEvidence.request &&
-    widgetEvidence.request.type === 'feature_request' &&
-    widgetEvidence.context &&
-    widgetEvidence.context.route === '/mission' &&
-    widgetEvidence.context.selectedObjectType === 'anomaly';
+    defaultWidgetEvidence &&
+    defaultWidgetEvidence.request &&
+    defaultWidgetEvidence.request.type === 'feature_request' &&
+    defaultWidgetEvidence.context &&
+    defaultWidgetEvidence.context.route === '/mission' &&
+    !Object.prototype.hasOwnProperty.call(defaultWidgetEvidence.context, 'selectedObjectType') &&
+    !Object.prototype.hasOwnProperty.call(defaultWidgetEvidence.context, 'selectedObjectId') &&
+    selectedWidgetEvidence &&
+    selectedWidgetEvidence.request &&
+    selectedWidgetEvidence.request.type === 'feature_request' &&
+    selectedWidgetEvidence.context &&
+    selectedWidgetEvidence.context.route === '/mission' &&
+    selectedWidgetEvidence.context.selectedObjectType === 'anomaly' &&
+    selectedWidgetEvidence.context.selectedObjectId === 'signal-drop-17' &&
+    selectedWidgetEvidence.context.selectionExplicit === true;
 
   const runtimeStatus =
     missionVisible &&
+    noReportAttachedVisible &&
+    noSelectedContextBeforeRequest &&
     pressureReplayOnline &&
     pressureTrendVisible &&
+    selectedContextVisible &&
     orbiterAssetLoaded &&
     crowdshipReady &&
     loaderScriptReady &&
@@ -175,8 +226,12 @@ async function run() {
     loaderScriptReady,
     launcherEnabled,
     launcherLabel,
+    noReportAttachedVisible,
+    noSelectedContextBeforeRequest,
+    selectedContextVisible,
     widgetShellReady,
-    widgetEvidence,
+    defaultWidgetEvidence,
+    selectedWidgetEvidence,
     consoleErrors,
     firstPartyRequestFailures,
     pageErrors,

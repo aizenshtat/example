@@ -47,8 +47,23 @@ The example app may pass this context to Crowdship:
 window.Crowdship.setContext({
   route: "/mission",
   appVersion: "2026.04.18",
+  activeFilters: {
+    craft: "all",
+    window: "last-30"
+  }
+});
+```
+
+After the user explicitly selects a mission report, the example app may add selected object
+context:
+
+```js
+window.Crowdship.setContext({
+  route: "/mission",
+  appVersion: "2026.04.18",
   selectedObjectType: "anomaly",
   selectedObjectId: "signal-drop-17",
+  selectionExplicit: true,
   activeFilters: {
     craft: "all",
     window: "last-30"
@@ -79,7 +94,10 @@ The canonical first request is:
 Add relay-shadow markers to signal-drop replay.
 ```
 
-The user submits this from the mission view. Pressure replay is already present, so Crowdship receives the request with safe route, selected anomaly, and filter context and turns the next missing layer of anomaly context into structured product intent for the owner.
+The user submits this from the mission view. Pressure replay is already present, so Crowdship
+receives safe route and filter context by default. If the user selected a report first, Crowdship
+also receives the selected anomaly context and turns the next missing layer of anomaly context into
+structured product intent for the owner.
 
 ## Required Real Artifacts
 

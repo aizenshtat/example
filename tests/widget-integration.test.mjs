@@ -20,7 +20,10 @@ test('main bootstraps the Crowdship widget with env-backed defaults', () => {
   assert.match(bootstrap, /https:\/\/crowdship\.aizenshtat\.eu\/widget\/v1\.js/);
   assert.match(bootstrap, /DEFAULT_CROWDSHIP_PROJECT = 'example'/);
   assert.match(bootstrap, /DEFAULT_CROWDSHIP_ENVIRONMENT = 'production'/);
+  assert.match(bootstrap, /script\.crossOrigin = 'anonymous'/);
   assert.match(bootstrap, /dataset\.crowdshipLauncher = config\.launcher/);
+  assert.match(bootstrap, /dataset\.crowdshipAccent/);
+  assert.match(bootstrap, /dataset\.crowdshipLauncherLabel/);
   assert.match(envExample, /VITE_CROWDSHIP_WIDGET_SRC=/);
   assert.match(envExample, /VITE_CROWDSHIP_PROJECT=/);
   assert.match(envExample, /VITE_CROWDSHIP_ENVIRONMENT=/);
@@ -52,21 +55,32 @@ test('browser sentry bootstrap keeps preview tags safe and scoped to the example
   assert.match(viteEnv, /readonly VITE_SENTRY_PR_NUMBER\?: string;/);
 });
 
-test('App opens Crowdship with safe context for the seeded relay-shadow request', () => {
+test('App opens Crowdship with page context by default and selected context after explicit selection', () => {
   const app = read('src/App.tsx');
   const data = read('src/data.ts');
 
   assert.match(app, /window\.Crowdship\?\.setContext\(crowdshipContext\)/);
-  assert.match(app, /window\.Crowdship\?\.open\(crowdshipRequest\)/);
+  assert.match(app, /window\.Crowdship\?\.open\(CROWDSHIP_REQUEST\)/);
   assert.match(app, /type:\s*'feature_request'/);
-  assert.match(app, /title:\s*selectedRequestSeed\.requestTitle/);
   assert.match(data, /missionRequestSeeds/);
   assert.match(data, /Add relay-shadow markers to signal-drop replay/);
   assert.doesNotMatch(app, /Add anomaly replay for signal drops/);
   assert.doesNotMatch(app, /Signal drops need inline replay\./);
   assert.match(app, /route:\s*'\/mission'/);
+  assert.match(app, /selectedObjectId\?:\s*string/);
+  assert.match(app, /selectedObjectType\?:\s*'anomaly'/);
+  assert.match(app, /selectionExplicit\?:\s*true/);
+  assert.match(app, /if \(!selectedObjectId\) \{/);
   assert.match(app, /selectedObjectType:\s*'anomaly'/);
-  assert.match(app, /signal-drop-17/);
+  assert.match(app, /selectionExplicit:\s*true/);
+  assert.match(app, /useState<string \| null>\(null\)/);
+  assert.doesNotMatch(app, /useState<string>\('signal-drop-17'\)/);
+  assert.doesNotMatch(app, /\?\?\s*visibleEvents\[0\]/);
+  assert.match(app, /onClick=\{\(\) => setSelectedEventId\(event\.id\)\}/);
+  assert.match(app, /Attach context/);
+  assert.match(app, /Context attached/);
+  assert.match(app, /Page context only/);
+  assert.doesNotMatch(app, /title:\s*selectedRequestSeed\.requestTitle/);
   assert.match(app, /__EXAMPLE_CROWDSHIP_CONTEXT__/);
 });
 
@@ -78,7 +92,7 @@ test('App renders anomaly pressure replay only for relevant selected anomalies',
   assert.match(app, /Pressure replay/);
   assert.match(app, /Pressure replay is already live where the mission needs it\./);
   assert.match(app, /Relay-shadow timing still needs its own layer\./);
-  assert.match(app, /selectedRequestSeed\.status/);
+  assert.match(app, /Context attached/);
   assert.match(data, /Pressure replay live/);
   assert.match(app, /Pressure trend around \{selectedEvent\.id\}/);
   assert.match(app, /before, during, and after/);

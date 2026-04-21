@@ -151,13 +151,21 @@ test('reference app implements orbital ops and pwa foundation', () => {
 
   assert.match(app, /Orbital Ops/);
   assert.match(app, /type:\s*'feature_request'/);
-  assert.match(app, /selectedRequestSeed\.buttonLabel/);
-  assert.match(app, /selectedRequestSeed\.requestTitle/);
+  assert.match(app, /Spot a missing mission workflow\?/);
+  assert.match(app, /Page context only/);
   assert.match(app, /Route \/mission/);
+  assert.match(app, /selectedObjectId\?:\s*string/);
+  assert.match(app, /selectedObjectType\?:\s*'anomaly'/);
+  assert.match(app, /selectionExplicit\?:\s*true/);
+  assert.match(app, /if \(!selectedObjectId\) \{/);
   assert.match(app, /selectedObjectType:\s*'anomaly'/);
-  assert.match(app, /signal-drop-17/);
+  assert.match(app, /selectionExplicit:\s*true/);
+  assert.match(app, /useState<string \| null>\(null\)/);
+  assert.doesNotMatch(app, /useState<string>\('signal-drop-17'\)/);
+  assert.doesNotMatch(app, /\?\?\s*visibleEvents\[0\]/);
   assert.match(app, /__EXAMPLE_CROWDSHIP_CONTEXT__/);
   assert.match(data, /Request shadow markers/);
+  assert.match(data, /signal-drop-17/);
   assert.match(data, /Add relay-shadow markers to signal-drop replay/);
   assert.match(externalRole, /Add relay-shadow markers to signal-drop replay/);
   assert.doesNotMatch(externalRole, /Add anomaly replay for signal drops/);
