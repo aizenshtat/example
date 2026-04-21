@@ -15,6 +15,15 @@ function readConfigValue(value: string | undefined, fallback: string) {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : fallback;
 }
 
+function shouldUseCorsForWidgetScript(widgetSrc: string) {
+  try {
+    const url = new URL(widgetSrc, window.location.href);
+    return url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+  } catch {
+    return false;
+  }
+}
+
 export function getCrowdshipBootstrapConfig(): CrowdshipBootstrapConfig {
   return {
     environment: readConfigValue(
@@ -43,7 +52,9 @@ export function ensureCrowdshipScript() {
   const config = getCrowdshipBootstrapConfig();
   const script = document.createElement('script');
   script.async = true;
-  script.crossOrigin = 'anonymous';
+  if (shouldUseCorsForWidgetScript(config.widgetSrc)) {
+    script.crossOrigin = 'anonymous';
+  }
   script.src = config.widgetSrc;
   script.dataset.crowdshipProject = config.project;
   script.dataset.crowdshipEnvironment = config.environment;

@@ -20,6 +20,7 @@ test('main bootstraps the Crowdship widget with env-backed defaults', () => {
   assert.match(bootstrap, /https:\/\/crowdship\.aizenshtat\.eu\/widget\/v1\.js/);
   assert.match(bootstrap, /DEFAULT_CROWDSHIP_PROJECT = 'example'/);
   assert.match(bootstrap, /DEFAULT_CROWDSHIP_ENVIRONMENT = 'production'/);
+  assert.match(bootstrap, /shouldUseCorsForWidgetScript/);
   assert.match(bootstrap, /script\.crossOrigin = 'anonymous'/);
   assert.match(bootstrap, /dataset\.crowdshipLauncher = config\.launcher/);
   assert.match(bootstrap, /dataset\.crowdshipAccent/);
