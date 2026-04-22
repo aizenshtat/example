@@ -23,11 +23,17 @@ test('main bootstraps the Crowdship widget with env-backed defaults', () => {
   assert.match(bootstrap, /shouldUseCorsForWidgetScript/);
   assert.match(bootstrap, /script\.crossOrigin = 'anonymous'/);
   assert.match(bootstrap, /dataset\.crowdshipLauncher = config\.launcher/);
+  assert.match(bootstrap, /dataset\.crowdshipUserId = config\.userId/);
+  assert.match(bootstrap, /dataset\.crowdshipUserEmail = config\.userEmail/);
+  assert.match(bootstrap, /dataset\.crowdshipUserRole = config\.userRole/);
   assert.match(bootstrap, /dataset\.crowdshipAccent/);
   assert.match(bootstrap, /dataset\.crowdshipLauncherLabel/);
   assert.match(envExample, /VITE_CROWDSHIP_WIDGET_SRC=/);
   assert.match(envExample, /VITE_CROWDSHIP_PROJECT=/);
   assert.match(envExample, /VITE_CROWDSHIP_ENVIRONMENT=/);
+  assert.match(envExample, /VITE_CROWDSHIP_USER_ID=customer-123/);
+  assert.match(envExample, /VITE_CROWDSHIP_USER_EMAIL=customer@example\.com/);
+  assert.match(envExample, /VITE_CROWDSHIP_USER_ROLE=customer/);
 });
 
 test('browser sentry bootstrap keeps preview tags safe and scoped to the example app', () => {

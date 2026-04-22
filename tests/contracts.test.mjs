@@ -171,6 +171,8 @@ test('reference app implements orbital ops and pwa foundation', () => {
   assert.doesNotMatch(externalRole, /Add anomaly replay for signal drops/);
   assert.match(bootstrap, /getCrowdshipBootstrapConfig/);
   assert.match(bootstrap, /dataset\.crowdshipProject = config\.project/);
+  assert.match(bootstrap, /dataset\.crowdshipUserId = config\.userId/);
+  assert.match(bootstrap, /dataset\.crowdshipUserEmail = config\.userEmail/);
   assert.equal(manifest.name, 'Orbital Ops');
   assert.equal(manifest.short_name, 'Orbital');
   assert.match(manifest.description, /mission-control telemetry/i);

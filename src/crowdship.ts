@@ -2,12 +2,18 @@ const DEFAULT_CROWDSHIP_WIDGET_SRC = 'https://crowdship.aizenshtat.eu/widget/v1.
 const DEFAULT_CROWDSHIP_PROJECT = 'example';
 const DEFAULT_CROWDSHIP_ENVIRONMENT = 'production';
 const DEFAULT_CROWDSHIP_LAUNCHER = 'manual';
+const DEFAULT_CROWDSHIP_USER_ID = 'customer-123';
+const DEFAULT_CROWDSHIP_USER_EMAIL = 'customer@example.com';
+const DEFAULT_CROWDSHIP_USER_ROLE = 'customer';
 const SCRIPT_SELECTOR = 'script[data-example-crowdship-loader="true"]';
 
 export type CrowdshipBootstrapConfig = {
   environment: string;
   launcher: string;
   project: string;
+  userEmail: string;
+  userId: string;
+  userRole: string;
   widgetSrc: string;
 };
 
@@ -32,6 +38,12 @@ export function getCrowdshipBootstrapConfig(): CrowdshipBootstrapConfig {
     ),
     launcher: DEFAULT_CROWDSHIP_LAUNCHER,
     project: readConfigValue(import.meta.env.VITE_CROWDSHIP_PROJECT, DEFAULT_CROWDSHIP_PROJECT),
+    userEmail: readConfigValue(
+      import.meta.env.VITE_CROWDSHIP_USER_EMAIL,
+      DEFAULT_CROWDSHIP_USER_EMAIL,
+    ),
+    userId: readConfigValue(import.meta.env.VITE_CROWDSHIP_USER_ID, DEFAULT_CROWDSHIP_USER_ID),
+    userRole: readConfigValue(import.meta.env.VITE_CROWDSHIP_USER_ROLE, DEFAULT_CROWDSHIP_USER_ROLE),
     widgetSrc: readConfigValue(
       import.meta.env.VITE_CROWDSHIP_WIDGET_SRC,
       DEFAULT_CROWDSHIP_WIDGET_SRC,
@@ -59,6 +71,9 @@ export function ensureCrowdshipScript() {
   script.dataset.crowdshipProject = config.project;
   script.dataset.crowdshipEnvironment = config.environment;
   script.dataset.crowdshipLauncher = config.launcher;
+  script.dataset.crowdshipUserId = config.userId;
+  script.dataset.crowdshipUserEmail = config.userEmail;
+  script.dataset.crowdshipUserRole = config.userRole;
   script.dataset.crowdshipAccent = '#f5b544';
   script.dataset.crowdshipBackground = '#f7f8f2';
   script.dataset.crowdshipSurface = '#ffffff';
