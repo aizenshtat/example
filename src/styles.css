@@ -369,6 +369,62 @@ h3 {
   height: 1px;
 }
 
+.scene-moon {
+  animation: moon-cross 16s linear infinite;
+  background:
+    radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.92), rgba(224, 229, 240, 0.96) 42%, rgba(166, 174, 189, 0.98) 72%, rgba(116, 125, 142, 0.98) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 50%;
+  box-shadow:
+    0 0 42px rgba(255, 255, 255, 0.16),
+    0 0 90px rgba(127, 212, 255, 0.12);
+  height: 74px;
+  left: -92px;
+  opacity: 0.94;
+  position: absolute;
+  top: 18%;
+  width: 74px;
+  z-index: 1;
+}
+
+.scene-moon__crater,
+.scene-moon__glow {
+  border-radius: 50%;
+  position: absolute;
+}
+
+.scene-moon__crater {
+  background: rgba(111, 119, 134, 0.34);
+  box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.08);
+}
+
+.scene-moon__crater--one {
+  height: 15px;
+  left: 16px;
+  top: 18px;
+  width: 15px;
+}
+
+.scene-moon__crater--two {
+  height: 10px;
+  left: 39px;
+  top: 26px;
+  width: 10px;
+}
+
+.scene-moon__crater--three {
+  height: 12px;
+  left: 28px;
+  top: 43px;
+  width: 12px;
+}
+
+.scene-moon__glow {
+  animation: moon-shimmer 4.8s ease-in-out infinite;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.26), transparent 68%);
+  inset: -18px;
+}
+
 .orbiter-art {
   animation: orbiter-float 5s ease-in-out infinite;
   filter: drop-shadow(0 0 24px rgba(255, 255, 255, 0.18));
@@ -982,6 +1038,33 @@ dd {
   }
 }
 
+@keyframes moon-cross {
+  0% {
+    transform: translate3d(0, 18px, 0) scale(0.92);
+  }
+
+  50% {
+    transform: translate3d(calc(50vw - 40px), -12px, 0) scale(1);
+  }
+
+  100% {
+    transform: translate3d(calc(100vw + 92px), 12px, 0) scale(0.95);
+  }
+}
+
+@keyframes moon-shimmer {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.96);
+  }
+
+  50% {
+    opacity: 0.82;
+    transform: scale(1.06);
+  }
+}
+
 @keyframes orbiter-float {
   0%,
   100% {
@@ -1067,6 +1150,33 @@ dd {
 
   .space-scene {
     min-height: 440px;
+  }
+
+  .scene-moon {
+    height: 96px;
+    top: 16%;
+    width: 96px;
+  }
+
+  .scene-moon__crater--one {
+    height: 18px;
+    left: 20px;
+    top: 22px;
+    width: 18px;
+  }
+
+  .scene-moon__crater--two {
+    height: 13px;
+    left: 52px;
+    top: 32px;
+    width: 13px;
+  }
+
+  .scene-moon__crater--three {
+    height: 15px;
+    left: 36px;
+    top: 56px;
+    width: 15px;
   }
 
   .orbiter-art {
