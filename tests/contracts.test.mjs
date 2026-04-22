@@ -231,6 +231,7 @@ test('preview workflow injects browser sentry build metadata', () => {
   assert.match(workflow, /pull-requests: read/);
   assert.match(workflow, /Resolve production metadata/);
   assert.match(workflow, /head_commit_message="\$\(jq -r '\.head_commit\.message \/\/ ""' "\$GITHUB_EVENT_PATH"\)"/);
+  assert.match(workflow, /\[0-9a-fA-F\]\{8\}-\[0-9a-fA-F\]\{4\}-\[0-9a-fA-F\]\{4\}-\[0-9a-fA-F\]\{4\}-\[0-9a-fA-F\]\{12\}/);
   assert.match(workflow, /curl --silent --show-error --location --output "\$pull_request_file" --write-out '%\{http_code\}'/);
   assert.match(workflow, /echo "contribution_id=\$contribution_id"/);
   assert.match(smokeScript, /window\.__crowdshipSmoke/);

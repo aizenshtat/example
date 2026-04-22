@@ -83,6 +83,10 @@ jobs:
             contribution_id="${branch_suffix%%--*}"
           fi
 
+          if [[ -z "$contribution_id" && "$branch_suffix" =~ ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})-.+$ ]]; then
+            contribution_id="${BASH_REMATCH[1]}"
+          fi
+
           if [[ -z "$contribution_id" && "$branch_suffix" =~ ^([A-Za-z0-9._]+-[0-9]+)-.+$ ]]; then
             contribution_id="${BASH_REMATCH[1]}"
           fi
@@ -536,6 +540,10 @@ jobs:
 
             if [[ -z "$contribution_id" && "$branch_suffix" == *"--"* ]]; then
               contribution_id="${branch_suffix%%--*}"
+            fi
+
+            if [[ -z "$contribution_id" && "$branch_suffix" =~ ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})-.+$ ]]; then
+              contribution_id="${BASH_REMATCH[1]}"
             fi
 
             if [[ -z "$contribution_id" && "$branch_suffix" =~ ^([A-Za-z0-9._]+-[0-9]+)-.+$ ]]; then
