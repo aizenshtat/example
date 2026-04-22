@@ -106,6 +106,18 @@ test('App renders anomaly pressure replay only for relevant selected anomalies',
   assert.match(styles, /pressure-chart/);
 });
 
+test('App adds an automatic moon animation to the mission banner', () => {
+  const app = read('src/App.tsx');
+  const styles = read('src/styles.css');
+
+  assert.match(app, /className="scene-moon"/);
+  assert.match(app, /scene-moon__crater/);
+  assert.match(styles, /scene-moon/);
+  assert.match(styles, /moon-cross/);
+  assert.match(styles, /animation: moon-cross 16s linear infinite/);
+  assert.match(styles, /@keyframes moon-cross/);
+});
+
 test('App keeps mission alerts permission behind explicit user action with Phase 2 states', () => {
   const app = read('src/App.tsx');
   const styles = read('src/styles.css');

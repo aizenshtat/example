@@ -466,6 +466,12 @@ export function App() {
           <div className="scene-wave scene-wave--two" aria-hidden="true" />
           <div className="scene-gridline scene-gridline--vertical" aria-hidden="true" />
           <div className="scene-gridline scene-gridline--horizontal" aria-hidden="true" />
+          <div className="scene-moon" aria-hidden="true">
+            <span className="scene-moon__crater scene-moon__crater--one" />
+            <span className="scene-moon__crater scene-moon__crater--two" />
+            <span className="scene-moon__crater scene-moon__crater--three" />
+            <span className="scene-moon__glow" />
+          </div>
           <img
             className="orbiter-art"
             src="./assets/orbiter.png"
