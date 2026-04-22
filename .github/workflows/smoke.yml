@@ -221,7 +221,7 @@ jobs:
           curl --fail --silent --show-error --location "${{ steps.meta.outputs.preview_url }}" >"$root_html"
           grep -q '<title>Orbital Ops</title>' "$root_html"
 
-          npm run smoke:preview -- "${{ steps.meta.outputs.preview_mission_url }}" >"$smoke_file"
+          node scripts/preview-runtime-smoke.mjs "${{ steps.meta.outputs.preview_mission_url }}" >"$smoke_file"
 
           runtime_status="$(jq -r '.runtimeStatus' "$smoke_file")"
           crowdship_ready="$(jq -r '.crowdshipReady' "$smoke_file")"
