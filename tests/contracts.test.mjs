@@ -219,7 +219,7 @@ test('preview workflow injects browser sentry build metadata', () => {
   assert.match(workflow, /VITE_SENTRY_BRANCH: \$\{\{ steps\.meta\.outputs\.branch \}\}/);
   assert.match(workflow, /VITE_SENTRY_PR_NUMBER: \$\{\{ github\.event\.pull_request\.number \}\}/);
   assert.match(workflow, /npx playwright install --with-deps chromium/);
-  assert.match(workflow, /npm run smoke:preview -- "\$\{\{ steps\.meta\.outputs\.preview_mission_url \}\}"/);
+  assert.match(workflow, /node scripts\/preview-runtime-smoke\.mjs "\$\{\{ steps\.meta\.outputs\.preview_mission_url \}\}"/);
   assert.match(workflow, /sentry_issues_api=/);
   assert.match(workflow, /Browser runtime smoke:/);
   assert.match(workflow, /Widget open contract:/);
