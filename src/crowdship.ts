@@ -1,4 +1,5 @@
-const DEFAULT_CROWDSHIP_WIDGET_SRC = 'https://crowdship.aizenshtat.eu/widget/v1.js';
+const DEFAULT_CROWDSHIP_WIDGET_SRC =
+  'https://crowdship.aizenshtat.eu/widget/v1.js?v=20260423-preview-actions';
 const DEFAULT_CROWDSHIP_PROJECT = 'example';
 const DEFAULT_CROWDSHIP_ENVIRONMENT = 'production';
 const DEFAULT_CROWDSHIP_LAUNCHER = 'manual';
